@@ -5,9 +5,15 @@ using UnityEngine.SceneManagement;
 
 public class AudioManagerScript : MonoBehaviour
 {
-    [Header("Playlists")]
-    [SerializeField] private AudioClip[] _gameMusic;
-    [SerializeField] private AudioClip[] _gameSFX;
+    [Header("Music")]
+    [SerializeField] private AudioClip _menuMusic;
+    [SerializeField] private AudioClip _editorMusic;
+    [SerializeField] private AudioClip _gameMusic;
+
+    [Header("SFX")]
+    [SerializeField] private AudioClip _doorSFX;
+    [SerializeField] private AudioClip _victorySFX;
+    [SerializeField] private AudioClip _defeatSFX;
 
     [Header("Debug")]
     [SerializeField] private GameManagerScript _gameManager;
@@ -33,8 +39,6 @@ public class AudioManagerScript : MonoBehaviour
     // Getters & Setters
     public static AudioManagerScript AMInstance { get { return _audioManagerInstance; } } 
     public AudioSource AudioSourceInstance { get { return _audioSourceInstance; } set { _audioSourceInstance = value; } }
-    public AudioClip[] GameMusicList {get { return _gameMusic; } }
-    public AudioClip[] GameSFXList { get { return _gameSFX; } }
     public AudioClip CurrentAudioClipLoaded { get { return _currentAudioClipLoaded; } set { _currentAudioClipLoaded = value; } }
     public bool AudioClipPlaying { get { return _audioClipPlaying; } set { _audioClipPlaying = value; } }
 
@@ -62,7 +66,6 @@ public class AudioManagerScript : MonoBehaviour
         _gameManager.OnGMSetUpComplete -= SetUpAudioManager;
         _gameManager.OnGMSetUpComplete += SetUpAudioManager;
     }
-
     private void SetUpAudioManager()
     {
         if (_gameManager.ActiveGameState != _currentGameState )
@@ -73,27 +76,15 @@ public class AudioManagerScript : MonoBehaviour
                     StopMusic();
                     break;
                 case GameState.InMenu:
-                    if (SceneManager.GetActiveScene().buildIndex == 7)
-                    {
-                        if (_gameManager.Victory)
-                        {
-                            PlayVictorySFX();
-                        }
-                        else
-                        {
-                            PlayDefeatSFX();
-                        }
-                    }
-
-                    PlayMusic(0);
+                    VictoryOrDefeatSFX();
+                    PlayMusic(_menuMusic);
                     _audioSourceInstance.time = 5;
-
                     break;
                 case GameState.InGame:
-                    StopMusic();
+                    PlayMusic(_gameMusic);
                     break;
                 case GameState.InEditor:
-                    PlayMusic(1);
+                    PlayMusic(_editorMusic);
                     _audioSourceInstance.time = 3;
                     break;
                 default:
@@ -106,22 +97,25 @@ public class AudioManagerScript : MonoBehaviour
     }
 
     // Music
-    public void PlayMusic(int clipIndex)
+    public void PlayMusic(AudioClip clip)
     {
-        if ((!_audioSourceInstance.isPlaying) || 
-             (_audioSourceInstance.isPlaying &&
-              _audioSourceInstance.clip != _gameMusic[clipIndex]))
+        if (clip != null)
         {
-            _audioSourceInstance.Stop();
+            if ((!_audioSourceInstance.isPlaying) ||
+                         (_audioSourceInstance.isPlaying &&
+                          _audioSourceInstance.clip != clip))
+            {
+                _audioSourceInstance.Stop();
 
-            _audioSourceInstance.clip = _gameMusic[clipIndex];
-            _currentAudioClipLoaded = _gameMusic[clipIndex];
+                _audioSourceInstance.clip = clip;
+                _currentAudioClipLoaded = clip;
 
-            _audioSourceInstance.Play();
-            _audioClipPlaying = _audioSourceInstance.isPlaying;
+                _audioSourceInstance.Play();
+                _audioClipPlaying = _audioSourceInstance.isPlaying;
 
-            _gameManager.CurrentAudioClipLoaded = _currentAudioClipLoaded;
-            _gameManager.AudioClipPlaying = _audioClipPlaying;
+                _gameManager.CurrentAudioClipLoaded = _currentAudioClipLoaded;
+                _gameManager.AudioClipPlaying = _audioClipPlaying;
+            }
         }
     }
     public void StopMusic()
@@ -138,65 +132,35 @@ public class AudioManagerScript : MonoBehaviour
     }
 
     // SFX
-    public void PlaySFX(int clipIndex)
+    private void VictoryOrDefeatSFX()
     {
-        AudioSource.PlayClipAtPoint(_gameSFX[clipIndex], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
+        if (SceneManager.GetActiveScene().buildIndex == 7)
+        {
+            if (_gameManager.Victory)
+            {
+                PlayVictorySFX();
+            }
+            else
+            {
+                PlayDefeatSFX();
+            }
+        }
     }
-    public void PlayHealSFX()
+    public void PlaySFX(AudioClip clip)
     {
-        AudioSource.PlayClipAtPoint(_gameSFX[0], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayPlayerHurtSFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[1], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayWeaponBSFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[2], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayWeapon2SFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[3], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayWeapon3SFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[4], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayReloadSFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[5], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayEnemyAtkSFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[6], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayEnemyBaseTakeDamageSFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[7], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayEnemyStrongTakeDamageSFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[8], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayBossTakeDamageSFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[9], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
+        AudioSource.PlayClipAtPoint(clip, CameraManagerScript.CMInstance.ActiveCamera.transform.position);
     }
     public void PlayDoorSFX()
     {
-        AudioSource.PlayClipAtPoint(_gameSFX[10], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
-    }
-    public void PlayKeyCardSFX()
-    {
-        AudioSource.PlayClipAtPoint(_gameSFX[11], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
+        PlaySFX(_doorSFX);
     }
     public void PlayVictorySFX()
     {
-        AudioSource.PlayClipAtPoint(_gameSFX[12], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
+        PlaySFX(_victorySFX);
     }
     public void PlayDefeatSFX()
     {
-        AudioSource.PlayClipAtPoint(_gameSFX[13], CameraManagerScript.CMInstance.ActiveCamera.transform.position);
+        PlaySFX(_defeatSFX);
     }
 }
 

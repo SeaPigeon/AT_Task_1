@@ -61,10 +61,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_MoveRepeatDelay: 0.5
   m_MoveRepeatRate: 0.1
-  m_ActionsAsset: {fileID: -944628639613478452, guid: ef386c43a308eb34492151e45ce83add, type: 3}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: 226135bb8b904b544b3865ccd70d1d59, type: 3}
   m_PointAction: {fileID: 0}
-  m_MoveAction: {fileID: -4444641777351387511, guid: ef386c43a308eb34492151e45ce83add, type: 3}
-  m_SubmitAction: {fileID: -5328102031248952502, guid: ef386c43a308eb34492151e45ce83add, type: 3}
+  m_MoveAction: {fileID: 1307889848197374012, guid: 226135bb8b904b544b3865ccd70d1d59, type: 3}
+  m_SubmitAction: {fileID: 9214545250959544610, guid: 226135bb8b904b544b3865ccd70d1d59, type: 3}
   m_CancelAction: {fileID: 8519110995631201107, guid: ef386c43a308eb34492151e45ce83add, type: 3}
   m_LeftClickAction: {fileID: 0}
   m_MiddleClickAction: {fileID: 0}

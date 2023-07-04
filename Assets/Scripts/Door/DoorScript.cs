@@ -6,15 +6,9 @@ public class DoorScript : MonoBehaviour
 {
     public enum DoorType
     {
-        NormalDoor,
-        KeyCardDoor
+        Default
     }
-    public enum DoorColour 
-    {
-        Red,
-        Blue,
-        Yellow
-    }
+    
     public enum DoorState
     {
         Open,
@@ -23,7 +17,6 @@ public class DoorScript : MonoBehaviour
 
     [Header("Door Variables")]
     [SerializeField] DoorType _doorType;
-    [SerializeField] DoorColour _doorColour;
     [SerializeField] DoorState _currentDoorState;
     [SerializeField] float _openingSpeed = 15;
     [SerializeField] Vector3 _openPosition = new Vector3 (0, -2, 0);
@@ -44,11 +37,15 @@ public class DoorScript : MonoBehaviour
     }
     private void Start()
     {
-        _audioManager = AudioManagerScript.AMInstance;
+        SetUpReferences();
     }
     private void Update()
     {
         ToggleDoor();
+    }
+    private void SetUpReferences()
+    {
+        _audioManager = AudioManagerScript.AMInstance;
     }
     private void ToggleDoor()
     {
@@ -64,57 +61,17 @@ public class DoorScript : MonoBehaviour
         _door.localPosition = Vector3.MoveTowards(_door.localPosition, _targetPosition, _openingSpeed * Time.deltaTime);
         
     }
-    
-    private void OpenKeyCardDoor(Collider other)
-    {
-        switch (_doorColour)
-        {
-            case DoorColour.Red:
-                if (other.GetComponent<PlayerScript>().HasRedKeycard)
-                {
-                    _currentDoorState = DoorState.Open;
-                    _audioManager.PlayDoorSFX();
-                }
-                break;
 
-            case DoorColour.Blue:
-                if (other.GetComponent<PlayerScript>().HasBlueKeycard)
-                {
-                    _currentDoorState = DoorState.Open;
-                    _audioManager.PlayDoorSFX();
-                }
-                break;
-
-            case DoorColour.Yellow:
-                if (other.GetComponent<PlayerScript>().HasYellowKeycard)
-                {
-                    _currentDoorState = DoorState.Open;
-                    _audioManager.PlayDoorSFX();
-                }
-                break;
-
-            default:
-                Debug.Log("KeyCard Door Error");
-                break;
-        }
-    }
-    private void OnTriggerEnter(Collider other)
+    private void OpenDoor(Collider other)
     {
         if (other.GetComponent<PlayerScript>() || other.GetComponent<EnemyScript>())
         {
             _objectsInTrigger.Add(other);
             switch (_doorType)
             {
-                case DoorType.NormalDoor:
+                case DoorType.Default:
                     _currentDoorState = DoorState.Open;
                     _audioManager.PlayDoorSFX();
-                    break;
-
-                case DoorType.KeyCardDoor:
-                    if (other.GetComponent<PlayerScript>())
-                    {
-                        OpenKeyCardDoor(other);
-                    }
                     break;
 
                 default:
@@ -123,7 +80,7 @@ public class DoorScript : MonoBehaviour
             }
         }
     }
-    private void OnTriggerExit(Collider other)
+    private void CloseDoor(Collider other)
     {
         if (other.GetComponent<PlayerScript>() || other.GetComponent<EnemyScript>())
         {
@@ -134,5 +91,13 @@ public class DoorScript : MonoBehaviour
                 _audioManager.PlayDoorSFX();
             }
         }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        OpenDoor(other);
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        CloseDoor(other);
     }
 }

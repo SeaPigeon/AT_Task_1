@@ -95,29 +95,29 @@ public class GameManagerScript : MonoBehaviour
     }
     public void SetGameState()
     {
-        if (ActiveScene.name == "DebugScene")
+        if (SceneManager.GetActiveScene().buildIndex == 0)
         {
             ActiveGameState = GameState.Debug;
         }
-        else if (ActiveScene.name == "MainMenu")
+        else if (SceneManager.GetActiveScene().buildIndex == 1)
         {
             ActiveGameState = GameState.InMenu;
         }
-        else if (ActiveScene.name == "ControlsMenu")
+        else if (SceneManager.GetActiveScene().buildIndex == 2)
         {
             ActiveGameState = GameState.InMenu;
         }
-        else if (ActiveScene.name == "LevelEditor")
+        else if (SceneManager.GetActiveScene().buildIndex == 3)
         {
             ActiveGameState = GameState.InEditor;
         }
-        else if (ActiveScene.name == "Level_1" || 
-                 ActiveScene.name == "Level_2" ||
-                 ActiveScene.name == "Level_3")
+        else if (SceneManager.GetActiveScene().buildIndex == 4 ||
+                 SceneManager.GetActiveScene().buildIndex == 5 ||
+                 SceneManager.GetActiveScene().buildIndex == 6)
         {
             ActiveGameState = GameState.InGame;
         }
-        else if (ActiveScene.name == "EndGameScene")
+        else if (SceneManager.GetActiveScene().buildIndex == 7)
         {
             ActiveGameState = GameState.InMenu;
         }

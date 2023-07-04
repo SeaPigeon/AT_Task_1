@@ -39,5 +39,38 @@ public class SceneManagerScript : MonoBehaviour
     {
         SceneManager.LoadScene(sceneName);
     }
+    public void LoadDebugScene()
+    {
+        LoadScene("DebugScene");
+    }
+    public void LoadMainMenuScene()
+    {
+        LoadScene("MainMenu");
+    }
+    public void LoadControlMenuScene()
+    {
+        LoadScene("ControlsMenu");
+    }
+    public void LoadEditorScene()
+    {
+        LoadScene("LevelEditor");
+    }
+    public void LoadLevel1Scene()
+    {
+        LoadScene("Level_1");
+        PlayerScript.PlayerInstance.ResetPlayer();
+    }
+    public void LoadLevel2Scene()
+    {
+        LoadScene("Level_2");
+    }
+    public void LoadLevel3Scene()
+    {
+        LoadScene("Level_3");
+    }
+    public void LoadEndGameScreen()
+    {
+        LoadScene("EndGameScene");
+    }
 
 }

@@ -9,7 +9,7 @@ public class InputManagerScript : MonoBehaviour
 {
     private static InputManagerScript _inputManagerInstance = null;
 
-    private NewInputMap _inputMap;
+    [SerializeField] private NewInputMap _inputMap;
     [SerializeField] private InputActionMap _activeInputMap;
     [SerializeField] private GameManagerScript _gameManager;
 
@@ -21,8 +21,6 @@ public class InputManagerScript : MonoBehaviour
     [SerializeField] bool _shoulderRInput;
     [SerializeField] bool _shoulderLInput;
     [SerializeField] bool _startInput;
-    
-    public event Action<InputActionMap> OnInputMapTransitionEvent;
     
     private void Awake()
     {
@@ -68,10 +66,8 @@ public class InputManagerScript : MonoBehaviour
     }
     private void SubscribeToEvents()
     {
-        OnInputMapTransitionEvent -= ActivateInputMap;
         _gameManager.OnGMSetUpComplete -= SetUpStartingInputMap;
 
-        OnInputMapTransitionEvent += ActivateInputMap;
         _gameManager.OnGMSetUpComplete += SetUpStartingInputMap;
     }
     public void SetUpStartingInputMap()
@@ -93,11 +89,12 @@ public class InputManagerScript : MonoBehaviour
         {
             ActivateInputMap(_inputMap.UI);
         }
-        //Debug.Log("InputManager Call from GMEvent: " + _activeInputMap);
+        Debug.Log("InputManager Call from GMEvent: " + _activeInputMap);
     }
     public void SubscribeUIInputs()
     {
-        _inputMap.UI.Move.started += OnMove;
+        // UNSUB
+        _inputMap.UI.Move.started -= OnMove;
         
         _inputMap.UI.ButtonWest.performed -= OnButtonWest;
         _inputMap.UI.ButtonNorth.performed -= OnButtonNorth;
@@ -108,6 +105,7 @@ public class InputManagerScript : MonoBehaviour
 
         _inputMap.UI.ButtonSouth.canceled -= OnButtonSouth;
 
+        // SUB
         _inputMap.UI.Move.started += OnMove;
         //_inputMap.UI.ButtonSouth.started += OnButtonSouth;
         _inputMap.UI.ButtonWest.performed += OnButtonWest;
@@ -172,11 +170,5 @@ public class InputManagerScript : MonoBehaviour
     {
         //StartInput = context.ReadValueAsButton();
         Debug.Log("StartUI");
-    }    
-    
-    // Events
-    public void OnInputMapEvent(InputActionMap map)
-    {
-        OnInputMapTransitionEvent?.Invoke(map);
-    }
+    }     
 }

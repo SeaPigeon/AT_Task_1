@@ -5,53 +5,20 @@ using UnityEngine.UI;
 
 public class LinkUIScript : MonoBehaviour
 {
-    [Header("Debug Canvas")]
-    [SerializeField] Image _debugBG;
-    [SerializeField] Image _debugTitleBG;
-    [SerializeField] Text _debugTitleText;
-
-    [SerializeField] Sprite _debugBGImage;
-    [SerializeField] Sprite _debugTitleImage;
+    [Header("Variables")]
+    [Header("Variables Debug Canvas")]
+    [SerializeField] Sprite _debugBGSprite;
+    [SerializeField] Sprite _debugTitleBGSprite;
     [SerializeField] string _debugTitleString;
 
-    [Header("MainMenu Canvas")]
-    [SerializeField] Image _mainMenuBG;
-    [SerializeField] Image _mainMenuTitle;
-    [SerializeField] Text _mainMenuTitleText;
-
-    [SerializeField] Sprite _mainMenuBGImage;
-    [SerializeField] Sprite _mainMenuTitleImage;
+    [Header("Variables Main Menu Canvas")]
+    [SerializeField] Sprite _mainMenuBGSprite;
+    [SerializeField] Sprite _mainMenuTitleBGSprite;
     [SerializeField] string _mainMenuTitleString;
 
-    [Header("ControlsMenu Canvas")]
-    [SerializeField] Image _controlsBG;
-    [SerializeField] Image _controlsTitle;
-    [SerializeField] Text _controlsTitleText;
-
-    [SerializeField] Image _wButtonImage;
-    [SerializeField] Image _aButtonImage;
-    [SerializeField] Image _sButtonImage;
-    [SerializeField] Image _dButtonImage;
-    [SerializeField] Image _stickImage;
-    [SerializeField] Image _dpadImage;
-    [SerializeField] Text _MoveText;
-
-    [SerializeField] Image _spaceBarImage;
-    [SerializeField] Image _southButtonImage;
-    [SerializeField] Text _fireText;
-
-    [SerializeField] Image _shiftImage;
-    [SerializeField] Image _westImage;
-    [SerializeField] Text _strafeText;
-
-    [SerializeField] Image _qButtonImage;
-    [SerializeField] Image _eButtonImage;
-    [SerializeField] Image _lsButtonImage;
-    [SerializeField] Image _rsButtonImage;
-    [SerializeField] Text _weaponSwapText;
-
-    [SerializeField] Sprite _controlsBGImage;
-    [SerializeField] Sprite _controlsTitleImage;
+    [Header("Variables Controls Menu Canvas")]
+    [SerializeField] Sprite _controlsBGSprite;
+    [SerializeField] Sprite _controlsTitleSprite;
     [SerializeField] string _controlsTitleString;
 
     [SerializeField] Sprite _wButtonSprite;
@@ -76,45 +43,79 @@ public class LinkUIScript : MonoBehaviour
     [SerializeField] Sprite _rsButtonSprite;
     [SerializeField] string _weaponSwapString;
 
-    [Header("Game Canvas")]
-    [SerializeField] Image _gameBG;
-
-    [SerializeField] Image _healthImage;
-    [SerializeField] Text _healthText;
-    [SerializeField] Image _ammoImage;
-    [SerializeField] Text _ammoText;
-    [SerializeField] Image _scoreImage;
-    [SerializeField] Text _scoreText;
-    [SerializeField] Image _weaponImage;
-    [SerializeField] Text _weaponText;
-
-    [SerializeField] Sprite _gameBGImage;
-
-    [SerializeField] Sprite _healthSprite;
-    [SerializeField] Sprite _ammoSprite;
-    [SerializeField] Sprite _scoreSprite;
-    [SerializeField] Sprite _weaponSprite;
-
-    [Header("Editor Canvas")]
-    [SerializeField] Image _editorBG;
-    [SerializeField] Image _editorTitle;
-    [SerializeField] Text _editorTitleText;
-
-    [SerializeField] Sprite _editorBGImage;
-    [SerializeField] Sprite _editorTitleImage;
+    [Header("Variables Editor Canvas")]
+    [SerializeField] Sprite _editorBGSprite;
+    [SerializeField] Sprite _editorTitleBGSprite;
     [SerializeField] string _editorTitleString;
 
     [Header("EndGameMenu Canvas")]
-    [SerializeField] Image _endBG;
-    [SerializeField] Image _endTitle;
-    [SerializeField] Text _endTitleText;
-    [SerializeField] Image _endScoreBG;
-    [SerializeField] Text _endScoreBGText;
-
-    [SerializeField] Sprite _engBGImage;
-    [SerializeField] Sprite _endTitleImage;
+    [SerializeField] Sprite _engBGSprite;
+    [SerializeField] Sprite _endTitleSprite;
     [SerializeField] string _endTitleString;
     [SerializeField] Sprite _endScoreBGSprite;
+
+    [Header("Game Canvas")]
+    [SerializeField] Sprite _gameBGSprite;
+    [SerializeField] Sprite _healthSprite;
+    [SerializeField] Sprite _scoreSprite;
+
+    [Header("References")]
+    [Header("References Debug Canvas")]
+    [Header("--------------------------------------")]
+    [SerializeField] Image _debugBGImage;
+    [SerializeField] Image _debugTitleBGImage;
+    [SerializeField] Text _debugTitleText;
+
+    [Header("References Main Menu Canvas")]
+    [SerializeField] Image _mainMenuBGImage;
+    [SerializeField] Image _mainMenuTitleImage;
+    [SerializeField] Text _mainMenuTitleText;
+
+    [Header("References Controls Menu Canvas")]
+    [SerializeField] Image _controlsBGImage;
+    [SerializeField] Image _controlsTitleImage;
+    [SerializeField] Text _controlsTitleText;
+
+    [SerializeField] Image _wButtonImage;
+    [SerializeField] Image _aButtonImage;
+    [SerializeField] Image _sButtonImage;
+    [SerializeField] Image _dButtonImage;
+    [SerializeField] Image _stickImage;
+    [SerializeField] Image _dpadImage;
+    [SerializeField] Text _moveText;
+
+    [SerializeField] Image _spaceBarImage;
+    [SerializeField] Image _southButtonImage;
+    [SerializeField] Text _fireText;
+
+    [SerializeField] Image _shiftImage;
+    [SerializeField] Image _westImage;
+    [SerializeField] Text _strafeText;
+
+    [SerializeField] Image _qButtonImage;
+    [SerializeField] Image _eButtonImage;
+    [SerializeField] Image _lsButtonImage;
+    [SerializeField] Image _rsButtonImage;
+    [SerializeField] Text _weaponSwapText;
+
+    [Header("References Editor Canvas")]
+    [SerializeField] Image _editorBGImage;
+    [SerializeField] Image _editorTitleBGImage;
+    [SerializeField] Text _editorTitleText;
+
+    [Header("References End Game Canvas")]
+    [SerializeField] Image _endBGImage;
+    [SerializeField] Image _endTitleBGImage;
+    [SerializeField] Text _endTitleText;
+    [SerializeField] Image _endScoreBGImage;
+    [SerializeField] Text _endScoreBGText;
+
+    [Header("References Player Canvas")]
+    [SerializeField] Image _gameBGImage;
+    [SerializeField] Image _healthImage;
+    [SerializeField] Text _healthText;
+    [SerializeField] Image _scoreImage;
+    [SerializeField] Text _scoreText;
 
     [Header("Debug")]
     [SerializeField] GameManagerScript _gameManager;
@@ -133,21 +134,29 @@ public class LinkUIScript : MonoBehaviour
         _gameManager.OnGMSetUpComplete -= SetUpUI;
         _gameManager.OnGMSetUpComplete += SetUpUI;
     }
-    private void SetUpUI()
+
+    // G&S
+    public Text HealthTextUI { get { return _healthText; } set { _healthText = value; } }
+    public Text ScoreTextUI { get { return _scoreText; } set { _scoreText = value; } }
+    public Text ScoreEndScreenUI { get { return _endScoreBGText; } set { _endScoreBGText = value; } }
+
+    // SetUpUI
+    private void SetUpDebugUI()
     {
-        // Debug
-        _debugBG.sprite = _debugBGImage;
-        _debugTitleBG.sprite = _debugTitleImage;
+        _debugBGImage.sprite = _debugBGSprite;
+        _debugTitleBGImage.sprite = _debugTitleBGSprite;
         _debugTitleText.text = _debugTitleString;
-
-        // Main Menu
-        _mainMenuBG.sprite = _mainMenuBGImage;
-        _mainMenuTitle.sprite = _mainMenuTitleImage;
+    }
+    private void SetUpMainMenuUI()
+    {
+        _mainMenuBGImage.sprite = _mainMenuBGSprite;
+        _mainMenuTitleImage.sprite = _mainMenuTitleBGSprite;
         _mainMenuTitleText.text = _mainMenuTitleString;
-
-        // ControlsMenu
-        _controlsBG.sprite = _controlsBGImage;
-        _controlsTitle.sprite = _controlsTitleImage;
+    }
+    private void SetUpControlsUI()
+    {
+        _controlsBGImage.sprite = _controlsBGSprite;
+        _controlsTitleImage.sprite = _controlsTitleSprite;
         _controlsTitleText.text = _controlsTitleString;
 
         _wButtonImage.sprite = _wButtonSprite;
@@ -156,7 +165,7 @@ public class LinkUIScript : MonoBehaviour
         _dButtonImage.sprite = _dButtonSprite;
         _stickImage.sprite = _stickSprite;
         _dpadImage.sprite = _dpadSprite;
-        _MoveText.text = _moveString;
+        _moveText.text = _moveString;
 
         _spaceBarImage.sprite = _spaceBarSprite;
         _southButtonImage.sprite = _southButtonSprite;
@@ -171,31 +180,34 @@ public class LinkUIScript : MonoBehaviour
         _lsButtonImage.sprite = _lsButtonSprite;
         _rsButtonImage.sprite = _rsButtonSprite;
         _weaponSwapText.text = _weaponSwapString;
-
-        // Editor Menu
-        _editorBG.sprite = _editorBGImage;
-        _editorTitle.sprite = _editorTitleImage;
+    }
+    private void SetUpEditorUI()
+    {
+        _editorBGImage.sprite = _editorBGSprite;
+        _editorTitleBGImage.sprite = _editorTitleBGSprite;
         _editorTitleText.text = _editorTitleString;
-
-        // End Screen
-        _endBG.sprite = _engBGImage;
-        _endTitle.sprite = _endTitleImage;
+    }
+    private void SetUpEndGameUI()
+    {
+        _endBGImage.sprite = _engBGSprite;
+        _endTitleBGImage.sprite = _endTitleSprite;
         _endTitleText.text = _endTitleString;
-        _endScoreBG.sprite = _endScoreBGSprite;
-
-        // Game
-        _gameBG.sprite = _gameBGImage;
+        _endScoreBGImage.sprite = _endScoreBGSprite;
+    }
+    private void SetUpGameUI()
+    {
+        _gameBGImage.sprite = _gameBGSprite;
 
         _healthImage.sprite = _healthSprite;
-        _ammoImage.sprite = _ammoSprite;
         _scoreImage.sprite = _scoreSprite;
     }
-
-    public Text HealthTextUI { get { return _healthText;} set { _healthText = value; } }
-    public Text AmmoTextUI { get { return _ammoText; } set { _ammoText = value; } }
-    public Text ScoreTextUI { get { return _scoreText; } set { _scoreText = value; } }
-    public Text WeaponTextUI { get { return _weaponText; } set { _weaponText = value; } }
-    public Text ScoreEndScreenUI { get { return _endScoreBGText; } set { _endScoreBGText = value; } }
-    public Image ActiveWeaponUI { get { return _weaponImage; } set { _weaponImage = value; } }
-
+    private void SetUpUI()
+    {
+        SetUpDebugUI();
+        SetUpMainMenuUI();
+        SetUpControlsUI();
+        SetUpEditorUI();
+        SetUpEndGameUI();
+        SetUpGameUI();        
+    }
 }
