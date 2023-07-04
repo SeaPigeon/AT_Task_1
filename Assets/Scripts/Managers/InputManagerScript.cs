@@ -89,7 +89,7 @@ public class InputManagerScript : MonoBehaviour
         {
             ActivateInputMap(_inputMap.UI);
         }
-        Debug.Log("InputManager Call from GMEvent: " + _activeInputMap);
+        //Debug.Log("InputManager Call from GMEvent: " + _activeInputMap);
     }
     public void SubscribeUIInputs()
     {

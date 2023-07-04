@@ -286,6 +286,14 @@ public class @NewInputMap : IInputActionCollection, IDisposable
                     ""interactions"": """"
                 },
                 {
+                    ""name"": ""Rotate"",
+                    ""type"": ""Value"",
+                    ""id"": ""22c9373b-1be5-46ca-beb2-860767e81ff2"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
                     ""name"": ""ButtonSouth"",
                     ""type"": ""Button"",
                     ""id"": ""83dd792a-6dca-4b16-be47-0042be365640"",
@@ -540,6 +548,72 @@ public class @NewInputMap : IInputActionCollection, IDisposable
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""WASD"",
+                    ""id"": ""3f5fcd78-fe6b-4056-8230-95671a3c74cc"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""69b9ea77-7d08-4eec-9726-b5b66694a51c"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""6efe9d7e-cf64-4ca7-bdc6-2596ecfda3d3"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""b9080ab6-5f60-4c08-9d38-280cd63a69d2"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""672d88a9-77ee-4e17-9e56-5945ff5b4937"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7f86f819-96c8-4980-9e7c-45eee2a0c87a"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -559,6 +633,7 @@ public class @NewInputMap : IInputActionCollection, IDisposable
         // Game
         m_Game = asset.FindActionMap("Game", throwIfNotFound: true);
         m_Game_Move = m_Game.FindAction("Move", throwIfNotFound: true);
+        m_Game_Rotate = m_Game.FindAction("Rotate", throwIfNotFound: true);
         m_Game_ButtonSouth = m_Game.FindAction("ButtonSouth", throwIfNotFound: true);
         m_Game_ButtonEast = m_Game.FindAction("ButtonEast", throwIfNotFound: true);
         m_Game_ButtonNorth = m_Game.FindAction("ButtonNorth", throwIfNotFound: true);
@@ -705,6 +780,7 @@ public class @NewInputMap : IInputActionCollection, IDisposable
     private readonly InputActionMap m_Game;
     private IGameActions m_GameActionsCallbackInterface;
     private readonly InputAction m_Game_Move;
+    private readonly InputAction m_Game_Rotate;
     private readonly InputAction m_Game_ButtonSouth;
     private readonly InputAction m_Game_ButtonEast;
     private readonly InputAction m_Game_ButtonNorth;
@@ -717,6 +793,7 @@ public class @NewInputMap : IInputActionCollection, IDisposable
         private @NewInputMap m_Wrapper;
         public GameActions(@NewInputMap wrapper) { m_Wrapper = wrapper; }
         public InputAction @Move => m_Wrapper.m_Game_Move;
+        public InputAction @Rotate => m_Wrapper.m_Game_Rotate;
         public InputAction @ButtonSouth => m_Wrapper.m_Game_ButtonSouth;
         public InputAction @ButtonEast => m_Wrapper.m_Game_ButtonEast;
         public InputAction @ButtonNorth => m_Wrapper.m_Game_ButtonNorth;
@@ -736,6 +813,9 @@ public class @NewInputMap : IInputActionCollection, IDisposable
                 @Move.started -= m_Wrapper.m_GameActionsCallbackInterface.OnMove;
                 @Move.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnMove;
                 @Move.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnMove;
+                @Rotate.started -= m_Wrapper.m_GameActionsCallbackInterface.OnRotate;
+                @Rotate.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnRotate;
+                @Rotate.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnRotate;
                 @ButtonSouth.started -= m_Wrapper.m_GameActionsCallbackInterface.OnButtonSouth;
                 @ButtonSouth.performed -= m_Wrapper.m_GameActionsCallbackInterface.OnButtonSouth;
                 @ButtonSouth.canceled -= m_Wrapper.m_GameActionsCallbackInterface.OnButtonSouth;
@@ -764,6 +844,9 @@ public class @NewInputMap : IInputActionCollection, IDisposable
                 @Move.started += instance.OnMove;
                 @Move.performed += instance.OnMove;
                 @Move.canceled += instance.OnMove;
+                @Rotate.started += instance.OnRotate;
+                @Rotate.performed += instance.OnRotate;
+                @Rotate.canceled += instance.OnRotate;
                 @ButtonSouth.started += instance.OnButtonSouth;
                 @ButtonSouth.performed += instance.OnButtonSouth;
                 @ButtonSouth.canceled += instance.OnButtonSouth;
@@ -803,6 +886,7 @@ public class @NewInputMap : IInputActionCollection, IDisposable
     public interface IGameActions
     {
         void OnMove(InputAction.CallbackContext context);
+        void OnRotate(InputAction.CallbackContext context);
         void OnButtonSouth(InputAction.CallbackContext context);
         void OnButtonEast(InputAction.CallbackContext context);
         void OnButtonNorth(InputAction.CallbackContext context);

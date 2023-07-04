@@ -27,6 +27,8 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] int _score;
     [SerializeField] bool _victory;
 
+    [SerializeField] AgentScript[] _agentsInGame;
+
     public event Action OnGMSetUpComplete;
 
     private static GameManagerScript _gameManagerInstance = null;
@@ -55,7 +57,7 @@ public class GameManagerScript : MonoBehaviour
     public bool AudioClipPlaying { get { return _audioClipPlaying; } set { _audioClipPlaying = value; } }
     public int Score { get { return _score; } set { _score = value; } }
     public bool Victory { get { return _victory; } set { _victory = value; } }
-
+    public AgentScript[] AgentsInGame { get { return _agentsInGame; } set { _agentsInGame = value; } }
     // Methods
     private void GameManagerSingleton()
     {
@@ -81,6 +83,7 @@ public class GameManagerScript : MonoBehaviour
         ActiveSceneName = SceneManager.GetActiveScene().name;
         SceneLoadedIndex = SceneManager.GetActiveScene().buildIndex;
         SetGameState();
+        FindAgentsinScene();
         _victory = false;
         OnGMSetUpComplete?.Invoke();
         //Debug.Log("GameManager SetUp");
@@ -120,6 +123,13 @@ public class GameManagerScript : MonoBehaviour
         else if (SceneManager.GetActiveScene().buildIndex == 7)
         {
             ActiveGameState = GameState.InMenu;
+        }
+    }
+    private void FindAgentsinScene()
+    {
+        if (_activeGameState == GameState.InGame)
+        {
+            _agentsInGame = FindObjectsOfType<AgentScript>(); Debug.Log(_agentsInGame.Length);
         }
     }
     public void QuitGame()

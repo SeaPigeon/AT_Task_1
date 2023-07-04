@@ -93,7 +93,6 @@ public class UIManagerScript : MonoBehaviour
     public void SetUpEventSystem()
     {
         _eventSystem.SetSelectedGameObject(ActiveCanvas.GetComponent<RectTransform>().GetChild(1).gameObject);
-        Debug.Log("call setup" + ActiveCanvas.GetComponent<RectTransform>().GetChild(1).gameObject.name);
     }   
 
     // Public Methods
