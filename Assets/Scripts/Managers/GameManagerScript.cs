@@ -129,7 +129,7 @@ public class GameManagerScript : MonoBehaviour
     {
         if (_activeGameState == GameState.InGame)
         {
-            _agentsInGame = FindObjectsOfType<AgentScript>(); Debug.Log(_agentsInGame.Length);
+            _agentsInGame = FindObjectsOfType<AgentScript>();
         }
     }
     public void QuitGame()

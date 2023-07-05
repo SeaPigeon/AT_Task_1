@@ -27,6 +27,7 @@ public class AgentScript : MonoBehaviour
     {
         SetUpReferences();
         SetUpAgent();
+        Debug.Log(name + ": " + transform.position);
     }
     private void Update()
     {

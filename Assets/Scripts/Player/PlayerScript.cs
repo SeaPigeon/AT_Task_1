@@ -10,7 +10,8 @@ using UnityEngine.AI;
 public enum PlayerStates
 {
     Rest,
-    Selecting
+    Selecting,
+    HoldingSelection
 }
 public class PlayerScript : MonoBehaviour
 {
@@ -21,20 +22,27 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] float _ascentSpeed;
     [SerializeField] float _maxHeight;
     [SerializeField] float _minHeight;
+    [SerializeField] float _minAngleV;
+    [SerializeField] float _maxAngleV;
+    [SerializeField] Sprite _baseCrosshairSprite;
+    [SerializeField] Sprite _selectedCrosshairSprite;
 
     [Header("PlayerInput")]
     [SerializeField] CharacterController _playerCC;
     [SerializeField] Vector2 _movementInput;
     [SerializeField] Vector2 _rotateInput;
     [SerializeField] bool _southButtonInput;
+    [SerializeField] bool _westButtonInput;
+    [SerializeField] bool _eastButtonInput;
     [SerializeField] bool _RSInput;
     [SerializeField] bool _LSInput;
-    [SerializeField] bool _westButtonInput;
+    
     private Vector3 _moveVector;
     private Vector3 _appliedMoveVector;
 
     [Header("Debug")]
     [SerializeField] PlayerStates _state;
+    [SerializeField] bool _gravityEnabled;
     [SerializeField] List<AgentScript> _activeAgentsList;
     [SerializeField] List<Collider> _objectsInTrigger;
     [SerializeField] CinemachineVirtualCamera _gameCam;
@@ -45,20 +53,20 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] LinkUIScript _UILinker;
     [SerializeField] AudioManagerScript _audioManager;
     [SerializeField] Transform _spawnPoint;
-    [SerializeField] MeshRenderer _playerMesh;
+    [SerializeField] SpriteRenderer _playerSprite;
     [SerializeField] Transform _gameCamBody;
     [SerializeField] Vector3 _startingCamPos;
     [SerializeField] Quaternion _startingCamRot;
     bool isOnNavMesh;
 
-    float corner1 = 0;
-    float corner2 = 0;
-    float corner3 = 0;
-    float corner4 = 0;
-    float bigX = 0;
-    float smallX = 0;
-    float bigY = 0;
-    float smallY = 0;
+    float _xPoint1 = 0;
+    float _yPoint1 = 0;
+    float _xPoint2 = 0;
+    float _yPoint2 = 0;
+    float _bigX = 0;
+    float _smallX = 0;
+    float _bigY = 0;
+    float _smallY = 0;
 
     // G&S
     public static PlayerScript PlayerInstance { get { return _playerInstance; } }
@@ -83,7 +91,11 @@ public class PlayerScript : MonoBehaviour
         Move(MovementInput);
         Ascend(_RSInput);
         Descend(_LSInput);
-        ApplyGravity();
+        if (_gravityEnabled)
+        {
+            ApplyGravity();
+        }
+        ResetSelection(_eastButtonInput);
     }
     private void LateUpdate()
     {
@@ -116,7 +128,7 @@ public class PlayerScript : MonoBehaviour
         _UILinker = UIManagerScript.UIMInstance.GetComponent<LinkUIScript>();
         _audioManager = AudioManagerScript.AMInstance;
         _playerCC = gameObject.GetComponent<CharacterController>();
-        _playerMesh = gameObject.GetComponentInChildren<MeshRenderer>();
+        _playerSprite = gameObject.GetComponentInChildren<SpriteRenderer>();
         _gameCam = GetComponentInChildren<CinemachineVirtualCamera>();
         _gameCamBody = _gameCam.GetComponentInParent<Transform>();
     }
@@ -131,7 +143,8 @@ public class PlayerScript : MonoBehaviour
         _inputManager.InputMap.Game.Move.performed -= OnMove;
         _inputManager.InputMap.Game.Rotate.performed -= OnRotate;
         _inputManager.InputMap.Game.ButtonSouth.started -= OnButtonSouth;
-        _inputManager.InputMap.Game.ButtonWest.started -= OnButtonWest;
+        _inputManager.InputMap.Game.ButtonWest.performed -= OnButtonWest;
+        _inputManager.InputMap.Game.ButtonEast.started -= OnButtonEast;
         _inputManager.InputMap.Game.ShoulderR.started -= OnShoulderR;
         _inputManager.InputMap.Game.ShoulderL.started -= OnShoulderL;
 
@@ -139,6 +152,7 @@ public class PlayerScript : MonoBehaviour
         _inputManager.InputMap.Game.Rotate.canceled -= OnRotate;
         _inputManager.InputMap.Game.ButtonSouth.canceled -= OnButtonSouth;
         _inputManager.InputMap.Game.ButtonWest.canceled -= OnButtonWest;
+        _inputManager.InputMap.Game.ButtonEast.canceled -= OnButtonEast;
         _inputManager.InputMap.Game.ShoulderR.canceled -= OnShoulderR;
         _inputManager.InputMap.Game.ShoulderL.canceled -= OnShoulderL;
 
@@ -146,9 +160,9 @@ public class PlayerScript : MonoBehaviour
         _inputManager.InputMap.Game.Move.performed += OnMove;
         _inputManager.InputMap.Game.Rotate.performed += OnRotate;
         _inputManager.InputMap.Game.ButtonSouth.started += OnButtonSouth;
-        _inputManager.InputMap.Game.ButtonWest.started += OnButtonWest;
+        _inputManager.InputMap.Game.ButtonWest.performed += OnButtonWest;
         //_inputManager.InputMap.Game.ButtonNorth.performed += OnButtonNorth;
-        //_inputManager.InputMap.Game.ButtonEast.performed += OnButtonEast;
+        _inputManager.InputMap.Game.ButtonEast.performed += OnButtonEast;
         _inputManager.InputMap.Game.ShoulderR.started += OnShoulderR;
         _inputManager.InputMap.Game.ShoulderL.started += OnShoulderL;
         //_inputManager.InputMap.Game.StartButton.performed += OnStartButton;
@@ -158,7 +172,7 @@ public class PlayerScript : MonoBehaviour
         _inputManager.InputMap.Game.ButtonSouth.canceled += OnButtonSouth;
         _inputManager.InputMap.Game.ButtonWest.canceled += OnButtonWest;
         //_inputManager.InputMap.Game.ButtonNorth.canceled += OnButtonNorth;
-        //_inputManager.InputMap.Game.ButtonEast.canceled += OnButtonEast;
+        _inputManager.InputMap.Game.ButtonEast.canceled += OnButtonEast;
         _inputManager.InputMap.Game.ShoulderR.canceled += OnShoulderR;
         _inputManager.InputMap.Game.ShoulderL.canceled += OnShoulderL;
         //_inputManager.InputMap.Game.StartButton.canceled += OnStartButton;
@@ -166,9 +180,9 @@ public class PlayerScript : MonoBehaviour
     private void SetUpPlayer()
     {
         _state = PlayerStates.Rest;
+        _playerSprite.sprite = _baseCrosshairSprite;
         _startingCamPos = _gameCamBody.transform.localPosition;
         _startingCamRot = _gameCamBody.localRotation;
-        _minHeight = _gameCamBody.position.y;
 
         LinkUI();
         if (SceneManager.GetActiveScene().buildIndex == 4 ||
@@ -190,9 +204,9 @@ public class PlayerScript : MonoBehaviour
     }
     public void TogglePlayerMesh(bool state)
     {
-        if (state != _playerMesh.enabled)
+        if (state != _playerSprite.enabled)
         {
-            _playerMesh.enabled = state;
+            _playerSprite.enabled = state;
         }
     }
     public void MoveToSpawnPoint(Vector3 pos)
@@ -222,11 +236,14 @@ public class PlayerScript : MonoBehaviour
     }
     private void RotateH(Vector2 input)
     {
-        gameObject.transform.Rotate(new Vector3(0, input.x * _rotationSpeed * Time.deltaTime, 0));
+        transform.Rotate(new Vector3(0, input.x * _rotationSpeed * Time.deltaTime, 0));
     }
     private void RotateV(Vector2 input)
     {
-        _gameCamBody.transform.Rotate(new Vector3(input.y * _rotationSpeed * Time.deltaTime, 0, 0));
+        float rotationXOverTime = _gameCamBody.transform.eulerAngles.x - input.y * _rotationSpeed * Time.deltaTime;
+        float rotationX = Mathf.Clamp(rotationXOverTime, _minAngleV, _maxAngleV);
+
+        _gameCamBody.transform.rotation = Quaternion.Euler(rotationX, _gameCamBody.transform.eulerAngles.y, _gameCamBody.transform.eulerAngles.z);
     }
     private void Ascend(bool input)
     {
@@ -268,35 +285,34 @@ public class PlayerScript : MonoBehaviour
         agent.GetComponent<AgentScript>().IsAgentSelected = false;
         agent.GetComponent<MeshRenderer>().material.color = Color.black;
     }
-    private void ToggleSelection(bool input)
+    private void ToggleAgentSelection()
     {
-        if (input)
+        foreach (var agent in _objectsInTrigger)
         {
-            if (_objectsInTrigger.Count > 0 )
+            if (!agent.GetComponent<AgentScript>().IsAgentSelected)
             {
-                foreach (var agent in _objectsInTrigger)
-                {
-                    if (!agent.GetComponent<AgentScript>().IsAgentSelected)
-                    {
-                        AddAgentToSelection(agent.GetComponent<AgentScript>());
-                    }
-                    else
-                    {
-                        RemoveAgentFromSelection(agent.GetComponent<AgentScript>());
-                    }
-                }
-
-                Debug.Log("Agent List: " + _activeAgentsList);
+                AddAgentToSelection(agent.GetComponent<AgentScript>());
             }
             else
             {
-                Debug.Log("No Objects in trigger area");
+                RemoveAgentFromSelection(agent.GetComponent<AgentScript>());
             }
         }
     }
-    private void MoveAgent(bool input)
+    private void HasAgentsInSelection() 
     {
-        if (input && _objectsInTrigger.Count == 0)
+        if (_activeAgentsList.Count > 0)
+        {
+            _state = PlayerStates.HoldingSelection;
+        }
+        else
+        {
+            _state = PlayerStates.Rest;
+        }
+    }
+    private void MoveAgent()
+    {
+        if (SelectedPositionIsOnNavMesh())
         {
             foreach (var agent in _activeAgentsList)
             {
@@ -305,62 +321,86 @@ public class PlayerScript : MonoBehaviour
             }
         }
     }
-    private bool ClickIsOnNavMesh()
+    private bool SelectedPositionIsOnNavMesh()
     {
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit;
-        NavMeshHit navMeshHit;
-        //bool isOnNavMesh;
         if (Physics.Raycast(ray, out hit))
         {
-            isOnNavMesh = NavMesh.SamplePosition(hit.point, out navMeshHit, 0f, NavMesh.AllAreas);
+            if (NavMesh.SamplePosition(hit.point, out _, 0.1f, NavMesh.AllAreas))
+            {
+                return true;
+            } 
         }
-        return isOnNavMesh;
+        return false;        
     }
-    private void SelectionArea(bool input)
+    private void StartSelectionArea()
+    {
+        _state = PlayerStates.Selecting;
+        _playerSprite.sprite = _selectedCrosshairSprite;
+        _xPoint1 = transform.position.x;
+        _yPoint1 = transform.position.z;
+    }
+    private void StopSelectionArea()
+    {
+        _xPoint2 = transform.position.x;
+        _yPoint2 = transform.position.z;
+
+        if (_xPoint1 < _xPoint2)
+        {
+            _bigX = _xPoint2;
+            _smallX = _xPoint1;
+        }
+        else
+        {
+            _bigX = _xPoint1;
+            _smallX = _xPoint2;
+        }
+
+        if (_yPoint1 < _yPoint2)
+        {
+            _bigY = _yPoint2;
+            _smallY = _yPoint1;
+        }
+        else
+        {
+            _bigY = _yPoint1;
+            _smallY = _yPoint2;
+        }
+
+        foreach (var agent in _gameManager.AgentsInGame)
+        {
+            if ((agent.transform.position.x >= _smallX && agent.transform.position.x <= _bigX) &&
+                (agent.transform.position.y >= _smallY && agent.transform.position.y <= _bigY))
+            {
+                _objectsInTrigger.Add(agent.GetComponent<Collider>());
+                ToggleAgentSelection();
+                _objectsInTrigger.Clear();
+            }
+        }
+
+        _playerSprite.sprite = _baseCrosshairSprite;
+        HasAgentsInSelection();
+
+        _xPoint1 = 0;
+        _yPoint1 = 0;
+        _xPoint2 = 0;
+        _yPoint2 = 0;
+
+        _bigX = 0;
+        _smallX = 0;
+        _bigY = 0;
+        _smallY = 0;
+    }
+    private void ResetSelection(bool input)
     {
         if (input)
         {
-            _state = PlayerStates.Selecting;
-            corner1 = transform.position.x;
-            corner2 = transform.position.z;
-        }
-        else if (!input)
-        {
-            corner3 = transform.position.x;
-            corner4 = transform.position.y;
-
-            if (corner1 < corner3)
+            foreach (var agent in _activeAgentsList)
             {
-                bigX = corner3;
-                smallX = corner1;
+                RemoveAgentFromSelection(agent);
             }
-            else
-            {
-                bigX = corner1;
-                smallX = corner3;
-            }
-
-            if (corner2 < corner4)
-            {
-                bigY = corner4;
-                smallY = corner2;
-            }
-            else
-            {
-                bigY = corner2;
-                smallY = corner4;
-            }
-
-            foreach (var agent in _gameManager.AgentsInGame)
-            {
-                if ((agent.transform.position.x >= smallX && agent.transform.position.x <= bigX) && 
-                    (agent.transform.position.y >= smallY && agent.transform.position.y <= bigY))
-                {
-                    _activeAgentsList.Add(agent);
-                }
-            }
-            _state = PlayerStates.Rest;
+            _activeAgentsList.Clear();
         }
     }
     // Inputs
@@ -377,10 +417,7 @@ public class PlayerScript : MonoBehaviour
     private void OnButtonSouth(InputAction.CallbackContext context) 
     {
         _southButtonInput = context.ReadValueAsButton();
-        SelectionArea(_southButtonInput);
-        //ToggleSelection(_southButtonInput);
-        //MoveAgent(_southButtonInput);
-        //ClickIsOnNavMesh();
+        ButtonSouthBehaviour(_southButtonInput);
         //Debug.Log("SouthPlayer");
     }
     private void OnButtonWest(InputAction.CallbackContext context) 
@@ -395,7 +432,8 @@ public class PlayerScript : MonoBehaviour
     }
     private void OnButtonEast(InputAction.CallbackContext context) 
     {
-        Debug.Log("EastPlayer");
+        _eastButtonInput = context.ReadValueAsButton();
+        //Debug.Log("EastPlayer");
     }
     private void OnShoulderR(InputAction.CallbackContext context) 
     {
@@ -412,6 +450,52 @@ public class PlayerScript : MonoBehaviour
         Debug.Log("StartPlayer");
     }
 
+    private void ButtonSouthBehaviour(bool input)
+    {
+        switch (_state)
+        {
+            case PlayerStates.Rest:
+                if (input)
+                {
+                    if (_objectsInTrigger.Count == 0)
+                    {
+                        StartSelectionArea();
+                    }
+                    else
+                    {
+                        ToggleAgentSelection();
+                        HasAgentsInSelection();
+                    }
+                }
+                break;
+
+            case PlayerStates.Selecting:
+                if (input)
+                {
+                    StopSelectionArea();
+                }
+                break;
+
+            case PlayerStates.HoldingSelection:
+                if (input)
+                {
+                    if (_objectsInTrigger.Count == 0)
+                    {
+                        MoveAgent();
+                    }
+                    else
+                    {
+                        ToggleAgentSelection();
+                        HasAgentsInSelection();
+                    }
+                }
+                break;
+
+            default:
+                Debug.Log("Default Case Button South Behaviour");
+                break;
+        }
+    }
     private void OnTriggerEnter(Collider other)
     {
         if (other.GetComponent<AgentScript>())
