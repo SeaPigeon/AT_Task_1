@@ -26,8 +26,13 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] bool _audioClipPlaying;
     [SerializeField] int _score;
     [SerializeField] bool _victory;
+    [SerializeField] int _totalCloth;
+    [SerializeField] int _totalIron;
+    [SerializeField] int _totalWood;
 
-    [SerializeField] AgentScript[] _agentsInGame;
+    [SerializeField] List<AgentScript> _agentsInGame;
+    [SerializeField] List<ResourceBase> _resourcesInGame;
+    //[SerializeField] List<BuildingBase> _buildingsInGame;
 
     public event Action OnGMSetUpComplete;
 
@@ -57,7 +62,14 @@ public class GameManagerScript : MonoBehaviour
     public bool AudioClipPlaying { get { return _audioClipPlaying; } set { _audioClipPlaying = value; } }
     public int Score { get { return _score; } set { _score = value; } }
     public bool Victory { get { return _victory; } set { _victory = value; } }
-    public AgentScript[] AgentsInGame { get { return _agentsInGame; } set { _agentsInGame = value; } }
+    
+    public List<AgentScript> AgentsInGame { get { return _agentsInGame; } set { _agentsInGame = value; } }
+    public List<ResourceBase> ResourcesInGame { get { return _resourcesInGame; } set { _resourcesInGame = value; } }
+
+    public int TotalCloth { get { return _totalCloth; } set { _totalCloth = value; } }
+    public int TotalIron { get { return _totalIron; } set { _totalIron = value; } }
+    public int TotalWood { get { return _totalWood; } set { _totalWood = value; } }
+
     // Methods
     private void GameManagerSingleton()
     {
@@ -83,7 +95,9 @@ public class GameManagerScript : MonoBehaviour
         ActiveSceneName = SceneManager.GetActiveScene().name;
         SceneLoadedIndex = SceneManager.GetActiveScene().buildIndex;
         SetGameState();
-        FindAgentsinScene();
+        TotalCloth = 0;
+        TotalIron = 0;
+        TotalWood = 0;
         _victory = false;
         OnGMSetUpComplete?.Invoke();
         //Debug.Log("GameManager SetUp");
@@ -123,13 +137,6 @@ public class GameManagerScript : MonoBehaviour
         else if (SceneManager.GetActiveScene().buildIndex == 7)
         {
             ActiveGameState = GameState.InMenu;
-        }
-    }
-    private void FindAgentsinScene()
-    {
-        if (_activeGameState == GameState.InGame)
-        {
-            _agentsInGame = FindObjectsOfType<AgentScript>();
         }
     }
     public void QuitGame()

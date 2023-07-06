@@ -44,29 +44,31 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] PlayerStates _state;
     [SerializeField] bool _gravityEnabled;
     [SerializeField] List<AgentScript> _activeAgentsList;
-    [SerializeField] List<Collider> _objectsInTrigger;
-    [SerializeField] CinemachineVirtualCamera _gameCam;
+    [SerializeField] List<AgentScript> _agentsInTrigger;
+    [SerializeField] Collider _resourceInTrigger;
+    [SerializeField] List<Collider> _buildingsInTrigger;
+    [SerializeField] List<Collider> _enemyInTrigger;
+    private CinemachineVirtualCamera _gameCam;
     private static PlayerScript _playerInstance;
-    [SerializeField] GameManagerScript _gameManager;
-    [SerializeField] SceneManagerScript _sceneManager;
-    [SerializeField] InputManagerScript _inputManager;
-    [SerializeField] LinkUIScript _UILinker;
-    [SerializeField] AudioManagerScript _audioManager;
-    [SerializeField] Transform _spawnPoint;
-    [SerializeField] SpriteRenderer _playerSprite;
-    [SerializeField] Transform _gameCamBody;
-    [SerializeField] Vector3 _startingCamPos;
-    [SerializeField] Quaternion _startingCamRot;
-    bool isOnNavMesh;
+    private GameManagerScript _gameManager;
+    private SceneManagerScript _sceneManager;
+    private InputManagerScript _inputManager;
+    private LinkUIScript _UILinker;
+    private AudioManagerScript _audioManager;
+    private Transform _spawnPoint;
+    private SpriteRenderer _playerSprite;
+    private Transform _gameCamBody;
+    private Vector3 _startingCamPos;
+    private Quaternion _startingCamRot;
 
-    float _xPoint1 = 0;
-    float _yPoint1 = 0;
-    float _xPoint2 = 0;
-    float _yPoint2 = 0;
-    float _bigX = 0;
-    float _smallX = 0;
-    float _bigY = 0;
-    float _smallY = 0;
+    private float _xPoint1 = 0;
+    private float _yPoint1 = 0;
+    private float _xPoint2 = 0;
+    private float _yPoint2 = 0;
+    private float _bigX = 0;
+    private float _smallX = 0;
+    private float _bigY = 0;
+    private float _smallY = 0;
 
     // G&S
     public static PlayerScript PlayerInstance { get { return _playerInstance; } }
@@ -96,6 +98,7 @@ public class PlayerScript : MonoBehaviour
             ApplyGravity();
         }
         ResetSelection(_eastButtonInput);
+
     }
     private void LateUpdate()
     {
@@ -261,10 +264,13 @@ public class PlayerScript : MonoBehaviour
             _gameCamBody.transform.position = Vector3.MoveTowards(_gameCamBody.transform.position, targetPos, _ascentSpeed * Time.deltaTime);
         }
     }
-    private void ResetCamPosition()
+    private void ResetCamPosition(bool input)
     {
-        _gameCamBody.transform.localPosition = _startingCamPos;
-        _gameCamBody.transform.localRotation = _startingCamRot;
+        if (input)
+        {
+            _gameCamBody.transform.localPosition = _startingCamPos;
+            _gameCamBody.transform.localRotation = _startingCamRot;
+        }
     }
     private void ApplyGravity()
     {
@@ -275,33 +281,90 @@ public class PlayerScript : MonoBehaviour
     }
     private void AddAgentToSelection(AgentScript agent)
     {
-        _activeAgentsList.Add(agent.GetComponent<AgentScript>());
-        agent.GetComponent<AgentScript>().IsAgentSelected = true;
+        _activeAgentsList.Add(agent);
+        agent.AgentState = AgentState.Selected;
         agent.GetComponent<MeshRenderer>().material.color = Color.green;
+        agent.StopAgent();
     }
     private void RemoveAgentFromSelection(AgentScript agent)
     {
         _activeAgentsList.Remove(agent.GetComponent<AgentScript>());
-        agent.GetComponent<AgentScript>().IsAgentSelected = false;
+        agent.GetComponent<AgentScript>().AgentState = AgentState.Inactive;
         agent.GetComponent<MeshRenderer>().material.color = Color.black;
     }
-    private void ToggleAgentSelection()
+    private void ToggleAgentSelection(AgentScript agent)
     {
-        foreach (var agent in _objectsInTrigger)
+        if (agent.AgentState != AgentState.Selected)
         {
-            if (!agent.GetComponent<AgentScript>().IsAgentSelected)
+            AddAgentToSelection(agent);
+        }
+        else if (agent.AgentState == AgentState.Selected)
+        {
+            RemoveAgentFromSelection(agent);
+        }
+    }
+
+    private void StartSelectionArea()
+    {
+        _xPoint1 = 0;
+        _yPoint1 = 0;
+        _xPoint2 = 0;
+        _yPoint2 = 0;
+
+        _bigX = 0;
+        _smallX = 0;
+        _bigY = 0;
+        _smallY = 0;
+
+        _state = PlayerStates.Selecting;
+        _playerSprite.sprite = _selectedCrosshairSprite;
+        _xPoint1 = transform.position.x;
+        _yPoint1 = transform.position.z;
+    }
+    private void StopSelectionArea()
+    {
+        
+        _xPoint2 = transform.position.x;
+        _yPoint2 = transform.position.z;
+
+        if (_xPoint1 < _xPoint2)
+        {
+            _bigX = _xPoint2;
+            _smallX = _xPoint1;
+        }
+        else
+        {
+            _bigX = _xPoint1;
+            _smallX = _xPoint2;
+        }
+
+        if (_yPoint1 < _yPoint2)
+        {
+            _bigY = _yPoint2;
+            _smallY = _yPoint1;
+        }
+        else
+        {
+            _bigY = _yPoint1;
+            _smallY = _yPoint2;
+        }
+        
+        foreach (var agent in _gameManager.AgentsInGame)
+        {
+            if ((agent.transform.position.x >= _smallX && agent.transform.position.x <= _bigX) &&
+                (agent.transform.position.z >= _smallY && agent.transform.position.z <= _bigY))
             {
-                AddAgentToSelection(agent.GetComponent<AgentScript>());
-            }
-            else
-            {
-                RemoveAgentFromSelection(agent.GetComponent<AgentScript>());
+                Debug.Log(agent);
+                ToggleAgentSelection(agent);
             }
         }
+
+        _playerSprite.sprite = _baseCrosshairSprite;
+        HasAgentsInSelection();
     }
     private void HasAgentsInSelection() 
     {
-        if (_activeAgentsList.Count > 0)
+        if (_activeAgentsList.Count >= 1)
         {
             _state = PlayerStates.HoldingSelection;
         }
@@ -334,73 +397,24 @@ public class PlayerScript : MonoBehaviour
         }
         return false;        
     }
-    private void StartSelectionArea()
+    
+    private void AssignTask()
     {
-        _state = PlayerStates.Selecting;
-        _playerSprite.sprite = _selectedCrosshairSprite;
-        _xPoint1 = transform.position.x;
-        _yPoint1 = transform.position.z;
-    }
-    private void StopSelectionArea()
-    {
-        _xPoint2 = transform.position.x;
-        _yPoint2 = transform.position.z;
-
-        if (_xPoint1 < _xPoint2)
-        {
-            _bigX = _xPoint2;
-            _smallX = _xPoint1;
-        }
-        else
-        {
-            _bigX = _xPoint1;
-            _smallX = _xPoint2;
-        }
-
-        if (_yPoint1 < _yPoint2)
-        {
-            _bigY = _yPoint2;
-            _smallY = _yPoint1;
-        }
-        else
-        {
-            _bigY = _yPoint1;
-            _smallY = _yPoint2;
-        }
-
-        foreach (var agent in _gameManager.AgentsInGame)
-        {
-            if ((agent.transform.position.x >= _smallX && agent.transform.position.x <= _bigX) &&
-                (agent.transform.position.y >= _smallY && agent.transform.position.y <= _bigY))
-            {
-                _objectsInTrigger.Add(agent.GetComponent<Collider>());
-                ToggleAgentSelection();
-                _objectsInTrigger.Clear();
-            }
-        }
-
-        _playerSprite.sprite = _baseCrosshairSprite;
-        HasAgentsInSelection();
-
-        _xPoint1 = 0;
-        _yPoint1 = 0;
-        _xPoint2 = 0;
-        _yPoint2 = 0;
-
-        _bigX = 0;
-        _smallX = 0;
-        _bigY = 0;
-        _smallY = 0;
+        _resourceInTrigger.GetComponent<ResourceBase>().StartGathering(_activeAgentsList);
     }
     private void ResetSelection(bool input)
     {
         if (input)
         {
-            foreach (var agent in _activeAgentsList)
+            var copy = new AgentScript[_activeAgentsList.Count];
+            _activeAgentsList.CopyTo(copy, 0);
+
+            foreach (var agent in copy)
             {
                 RemoveAgentFromSelection(agent);
             }
             _activeAgentsList.Clear();
+            HasAgentsInSelection();
         }
     }
     // Inputs
@@ -423,7 +437,7 @@ public class PlayerScript : MonoBehaviour
     private void OnButtonWest(InputAction.CallbackContext context) 
     {
         _westButtonInput = context.ReadValueAsButton();
-        ResetCamPosition();
+        ResetCamPosition(_westButtonInput);
         //Debug.Log("WestPlayer");
     }
     private void OnButtonNorth(InputAction.CallbackContext context) 
@@ -457,20 +471,23 @@ public class PlayerScript : MonoBehaviour
             case PlayerStates.Rest:
                 if (input)
                 {
-                    if (_objectsInTrigger.Count == 0)
+                    if (_agentsInTrigger.Count == 0 && _activeAgentsList.Count == 0)
                     {
                         StartSelectionArea();
                     }
-                    else
+                    else if (_agentsInTrigger.Count > 0)
                     {
-                        ToggleAgentSelection();
+                        foreach (var agent in _agentsInTrigger)
+                        {
+                            ToggleAgentSelection(agent);
+                        }
                         HasAgentsInSelection();
-                    }
+                    } 
                 }
                 break;
 
             case PlayerStates.Selecting:
-                if (input)
+                if (!input)
                 {
                     StopSelectionArea();
                 }
@@ -479,13 +496,17 @@ public class PlayerScript : MonoBehaviour
             case PlayerStates.HoldingSelection:
                 if (input)
                 {
-                    if (_objectsInTrigger.Count == 0)
+                    if (_agentsInTrigger.Count == 0 && _activeAgentsList.Count > 0)
                     {
                         MoveAgent();
                     }
-                    else
+                    else if(_agentsInTrigger.Count > 0)
                     {
-                        ToggleAgentSelection();
+                        foreach (var agent in _agentsInTrigger)
+                        {
+                            ToggleAgentSelection(agent);
+                        }
+
                         HasAgentsInSelection();
                     }
                 }
@@ -500,14 +521,22 @@ public class PlayerScript : MonoBehaviour
     {
         if (other.GetComponent<AgentScript>())
         {
-            _objectsInTrigger.Add(other);
+            _agentsInTrigger.Add(other.GetComponent<AgentScript>());
+        }
+        else if (other.GetComponent<ResourceBase>())
+        {
+            _resourceInTrigger = other;
         }
     }
     private void OnTriggerExit(Collider other)
     {
         if (other.GetComponent<AgentScript>())
         {
-            _objectsInTrigger.Remove(other);
+            _agentsInTrigger.Remove(other.GetComponent<AgentScript>());
+        }
+        else if (other.GetComponent<ResourceBase>())
+        {
+            _resourceInTrigger = null;
         }
     }
 }

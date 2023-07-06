@@ -6,7 +6,7 @@ using Cinemachine;
 
 public class BillboardScript : MonoBehaviour
 {
-    [SerializeField] SpriteRenderer _sprite;
+    [SerializeField] RectTransform _UIElement;
     void Start()
     {
         SetUpReferences();
@@ -18,11 +18,11 @@ public class BillboardScript : MonoBehaviour
     }
     private void SetUpReferences()
     {
-        _sprite = GetComponent<SpriteRenderer>();
+        _UIElement = GetComponent<RectTransform>();
     }
     private void Rotate()
     {
-        _sprite.transform.rotation = PlayerScript.PlayerInstance.transform.rotation; // test with camera rotation
+        _UIElement.transform.rotation = PlayerScript.PlayerInstance.InGameCamera.transform.rotation;
     }
 
 }

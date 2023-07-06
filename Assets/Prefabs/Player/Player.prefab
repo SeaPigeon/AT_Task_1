@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5158910219467697093}
-  - component: {fileID: 8938425219779128069}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -32,22 +31,6 @@ Transform:
   m_Father: {fileID: 6487002628642579694}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!54 &8938425219779128069
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 667073906486335447}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 4
-  m_CollisionDetection: 0
 --- !u!1 &5090971764254471858
 GameObject:
   m_ObjectHideFlags: 0
@@ -308,6 +291,14 @@ MonoBehaviour:
   _gameCamBody: {fileID: 0}
   _startingCamPos: {x: 0, y: 0, z: 0}
   _startingCamRot: {x: 0, y: 0, z: 0, w: 0}
+  _xPoint1: 0
+  _yPoint1: 0
+  _xPoint2: 0
+  _yPoint2: 0
+  _bigX: 0
+  _smallX: 0
+  _bigY: 0
+  _smallY: 0
 --- !u!143 &4052277301284392890
 CharacterController:
   m_ObjectHideFlags: 0
@@ -322,7 +313,7 @@ CharacterController:
   m_Height: 2
   m_Radius: 0.7
   m_SlopeLimit: 90
-  m_StepOffset: 2
+  m_StepOffset: 0
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
@@ -393,11 +384,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.92387956
+      value: 0.7372774
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.38268343
+      value: 0.67559016
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalRotation.y
@@ -409,7 +400,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 45
+      value: 85
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
