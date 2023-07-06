@@ -118,7 +118,7 @@ MonoBehaviour:
   _timeBetweenWalks: 0.5
   _MAX_CLOTH_CARRIED: 6
   _MAX_IRON_CARRIED: 2
-  _MAX_WOOD_CARRIED: 4
+  _MAX_WOOD_CARRIED: 2
   _agentState: 0
   _targetPos: {x: 0, y: 0, z: 0}
   _targetRotation: {x: 0, y: 0, z: 0}

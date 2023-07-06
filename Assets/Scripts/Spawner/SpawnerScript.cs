@@ -35,6 +35,8 @@ public class SpawnerScript : MonoBehaviour
     {
         switch (_state)
         {
+            case SpawnerState.Spawning:
+                break;
             case SpawnerState.Waiting:
                 if (_currentAgentsInScene < _MAX_NUMBER_OF_AGENTS)
                 {
@@ -67,7 +69,6 @@ public class SpawnerScript : MonoBehaviour
 
             Instantiate(_prefab, _spawnPoint.position, _spawnPoint.rotation);
             _currentAgentsInScene++;
-            Debug.Log(_currentAgentsInScene);
         }
 
         _state = SpawnerState.Waiting;

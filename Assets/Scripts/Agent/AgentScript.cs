@@ -25,21 +25,23 @@ public class AgentScript : MonoBehaviour
     [SerializeField] int _MAX_WOOD_CARRIED = 4;
 
     [Header("Debug")]
-    [SerializeField] AgentState _agentState;
-    [SerializeField] private Vector3 _targetPos;
-    [SerializeField] private Vector3 _targetRotation;
-    [SerializeField] NavMeshAgent _navMeshAgent;
-    [SerializeField] private int _carriedCloth;
-    [SerializeField] private int _carriedIron;
+    private AgentState _agentState;
+    private Vector3 _targetPos;
+    private Vector3 _targetRotation;
+    private NavMeshAgent _navMeshAgent;
+    private int _carriedCloth;
+    private int _carriedIron;
     [SerializeField] private int _carriedWood;
+    [SerializeField] private bool _movingTowardsInteractable;
     private ResourceType _resType;
     private GameManagerScript _gameManager;
-    [SerializeField] Vector3 _patrolPoint;
-    [SerializeField] bool _isPatrolling;
+    private Vector3 _patrolPoint;
+    private bool _isPatrolling;
     private float patrolTimer = 0f;
     private bool _isWaiting = false;
     private float _waitTimer;
     private bool _hasMoveTarget;
+    private MeshRenderer _meshRenderer;
 
     private void Start() 
     {
@@ -51,6 +53,13 @@ public class AgentScript : MonoBehaviour
         switch (_agentState)
         {
             case AgentState.Inactive:
+
+
+
+                // Change color based on the state
+
+
+
                 //StartIdle();
                 break;
             case AgentState.Idle:
@@ -58,9 +67,16 @@ public class AgentScript : MonoBehaviour
                 break;
             case AgentState.Moving:
                 Move(_targetPos);
-                if (!_navMeshAgent.pathPending && _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
+                if (!_navMeshAgent.pathPending && 
+                    _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
                 {
                     StopAgent();
+                    if (_movingTowardsInteractable)
+                    {
+                        var resource = FindObjectOfType<ResourceBase>();// hard coded, to be fix, pass reference properly
+                        resource.StartGathering(this);
+                        _movingTowardsInteractable = false;
+                    }
                 }
                 
                 break;
@@ -80,6 +96,13 @@ public class AgentScript : MonoBehaviour
     }
 
     // G&S
+    public int MaxClothCarriable { get { return _MAX_CLOTH_CARRIED; } set { _MAX_CLOTH_CARRIED = value; } }
+    public int MaxIronCarriable  { get { return _MAX_IRON_CARRIED; } set { _MAX_IRON_CARRIED = value; } }
+    public int MaxWoodCarriable { get { return _MAX_WOOD_CARRIED; } set { _MAX_WOOD_CARRIED = value; } }
+    public int CarriedCloth { get { return _carriedCloth; } set { _carriedCloth = value; } }
+    public int CarriedIron { get { return _carriedIron; } set { _carriedIron = value; } }
+    public int CarriedWood { get { return _carriedWood; } set { _carriedWood = value; } }
+    public bool MovingTowardsInteractable { get { return _movingTowardsInteractable; } set { _movingTowardsInteractable = value; } }
     public Vector3 MoveTargetPosition { get { return _targetPos; } set { _targetPos = value; } }
     public AgentState AgentState { get { return _agentState; } set { _agentState = value; } }
     public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } }
@@ -89,6 +112,7 @@ public class AgentScript : MonoBehaviour
     {
         _gameManager = GameManagerScript.GMInstance;
         _navMeshAgent = GetComponent<NavMeshAgent>();
+        _meshRenderer = GetComponent<MeshRenderer>();
     }
     private void SetUpAgent() 
     {
@@ -100,7 +124,7 @@ public class AgentScript : MonoBehaviour
         _carriedWood = 0;
         _gameManager.AgentsInGame.Add(this);
         _hasMoveTarget = false;
-        //StartCoroutine(Death());
+        _movingTowardsInteractable = false;
     }
 
     // Movement
@@ -167,6 +191,11 @@ public class AgentScript : MonoBehaviour
         NavMeshHit hit;
         NavMesh.SamplePosition(randomPoint, out hit, range, NavMesh.AllAreas);
         return hit.position;
+    }
+
+    public void ChangeColor(Color color)
+    {
+        _meshRenderer.material.color = color;
     }
 
     // Actions
