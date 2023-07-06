@@ -2,7 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using System;
 
+public enum SpawnerState
+{
+    Spawning,
+    Waiting
+}
 public class SpawnerScript : MonoBehaviour
 {
     [Header("Spawner Variables")]
@@ -12,15 +18,36 @@ public class SpawnerScript : MonoBehaviour
     [SerializeField] float _spawnTime = 10;
 
     [Header("Debug")]
+    [SerializeField] private SpawnerState _state;
     [SerializeField] private GameManagerScript _gameManager;
     [SerializeField] private int _currentAgentsInScene;
+    private bool _isWaiting = false;
+    private float _waitTimer;
+
+    private Action CountCheckEvent;
     void Start()
     {
         SetReferences();
         SetUpSpawner();
         StartCoroutine(SpawnAgent());
     }
+    private void Update()
+    {
+        switch (_state)
+        {
+            case SpawnerState.Waiting:
+                if (_currentAgentsInScene < _MAX_NUMBER_OF_AGENTS)
+                {
+                    _state = SpawnerState.Spawning;
+                    StartCoroutine(SpawnAgent());
+                }
+                break;
 
+            default:
+                Debug.Log("Spawner Error");
+                break;
+        }
+    }
     private void SetReferences()
     {
         _gameManager = GameManagerScript.GMInstance;
@@ -29,46 +56,21 @@ public class SpawnerScript : MonoBehaviour
     private void SetUpSpawner()
     {
         _currentAgentsInScene = _gameManager.AgentsInGame.Count;
+        _state = SpawnerState.Spawning;
     }
 
     private IEnumerator SpawnAgent()
     {
-
-        /*while (true)
+        while (_currentAgentsInScene < _MAX_NUMBER_OF_AGENTS)
         {
-            if (_currentAgentsInScene < _MAX_NUMBER_OF_AGENTS)
-            {
-                Instantiate(_prefab, _spawnPoint.position, _spawnPoint.rotation);
-                _currentAgentsInScene = _gameManager.AgentsInGame.Count;
-                Debug.Log(_gameManager.AgentsInGame.Count);
-            }
-
             yield return new WaitForSeconds(_spawnTime);
 
-            if (_currentAgentsInScene < _MAX_NUMBER_OF_AGENTS)
-            {
-                StartCoroutine(SpawnAgent());
-                yield break;
-            }
-        }*/
-        while (true)
-        {
-            if (_currentAgentsInScene < _MAX_NUMBER_OF_AGENTS)
-            {
-                Instantiate(_prefab, _spawnPoint.position, _spawnPoint.rotation);
-                _currentAgentsInScene = _gameManager.AgentsInGame.Count;
-                Debug.Log(_gameManager.AgentsInGame.Count);
-                yield return new WaitForSeconds(_spawnTime);
-            }
-            else
-            {
-                // Check if the agent count falls below the maximum
-                while (_currentAgentsInScene >= _MAX_NUMBER_OF_AGENTS)
-                {
-                    _currentAgentsInScene = _gameManager.AgentsInGame.Count;
-                }
-            }
+            Instantiate(_prefab, _spawnPoint.position, _spawnPoint.rotation);
+            _currentAgentsInScene++;
+            Debug.Log(_currentAgentsInScene);
         }
+
+        _state = SpawnerState.Waiting;
     }
-    
+
 }

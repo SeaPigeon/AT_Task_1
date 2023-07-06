@@ -354,7 +354,6 @@ public class PlayerScript : MonoBehaviour
             if ((agent.transform.position.x >= _smallX && agent.transform.position.x <= _bigX) &&
                 (agent.transform.position.z >= _smallY && agent.transform.position.z <= _bigY))
             {
-                Debug.Log(agent);
                 ToggleAgentSelection(agent);
             }
         }

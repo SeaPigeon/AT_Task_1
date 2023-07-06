@@ -115,13 +115,6 @@ public class AgentScript : MonoBehaviour
     }
     public void StopAgent()
     {
-        /*if (!_navMeshAgent.pathPending && _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
-        {
-            _agentState = AgentState.Selected;
-            _navMeshAgent.isStopped = true;
-            //_targetPos = transform.position;
-
-        }*/
         _agentState = AgentState.Selected;
         StopCoroutine(StopIdle());
         _navMeshAgent.isStopped = true;
