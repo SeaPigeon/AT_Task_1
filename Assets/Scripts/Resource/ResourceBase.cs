@@ -18,6 +18,7 @@ public class ResourceBase : MonoBehaviour
     [Header("Variables Resource")]
     [SerializeField] private int _resourceQuantityProduced = 1;
     [SerializeReference] private float _timeBetweenGather = 3;
+    [SerializeReference] private float _timeToRegenOne = 3;
     [SerializeField] private int _STARTING_RES_QUANTITY = 5;
     private MeshRenderer _fullMesh;
     private MeshRenderer _halfMesh;
@@ -29,14 +30,17 @@ public class ResourceBase : MonoBehaviour
     private ResourceType _resourceType;
     [SerializeField] private ResourceState _currentState;
     [SerializeField] private int _currentResQuantity;
+    [SerializeField] private bool _isGathering;
     //private MeshRenderer _mesh;
     [SerializeField] private int _currentWorkersCount;
     private GameManagerScript _gameManager;
 
-    private void Awake()
-    {
-        
-    }
+    // G&S
+    public ResourceType ResourceType { get { return _resourceType; } set { _resourceType = value; } }
+    public int ResourceProduced { get { return _resourceQuantityProduced; } set { _resourceQuantityProduced = value; } }
+    public int MaxWorkers { get { return _MAX_WORKERS; } set { _MAX_WORKERS = value; } }
+    public int CurrentWorkersCount { get { return _currentWorkersCount; } set { _currentWorkersCount = value; } }
+
     private void Start()
     {
         SetUpReferences();
@@ -58,11 +62,6 @@ public class ResourceBase : MonoBehaviour
         }
     }
 
-    public ResourceType ResourceType { get { return _resourceType; } set { _resourceType = value; } }
-    public int ResourceProduced { get { return _resourceQuantityProduced; } set { _resourceQuantityProduced = value; } }
-    public int MaxWorkers { get { return _MAX_WORKERS; } set { _MAX_WORKERS = value; } }
-    public int CurrentWorkersCount { get { return _currentWorkersCount; } set { _currentWorkersCount = value; } }
-
     private void SetUpReferences()
     {
         _gameManager = GameManagerScript.GMInstance;
@@ -70,72 +69,71 @@ public class ResourceBase : MonoBehaviour
     private void SetUpResource()
     {
         _gameManager.ResourcesInGame.Add(this);
-        _currentResQuantity = _STARTING_RES_QUANTITY;
+        ResetResource();
     }
     public void StartGathering(AgentScript agent)
     {
         if (_currentState == ResourceState.Gatherable)
         {
-            Debug.Log(_agentsAssignedList.Count);
             _agentsAssignedList.Add(agent);
-            Debug.Log(_agentsAssignedList.Count);
             _currentWorkersCount++;
-
-            StartCoroutine(Gather(agent));
+            _isGathering = true;
+            agent.RunningGatherCoR = StartCoroutine(Gather(agent));
         }
         else
         {
+            Debug.Log("Resource Not Available ATM, Try Again Later");
             // reset player state etc...
         }
     }
-    private IEnumerator Gather(AgentScript agent)
+    public void StopGathering(AgentScript agent)
     {
-        // change resource sprite if needed,
+        _currentWorkersCount--;
+        agent.AgentState = AgentState.Inactive; // if not from click SendBackToDeposit Later
+        _agentsAssignedList.Remove(agent);
+
+        if (_currentResQuantity <= 0 || _agentsAssignedList.Count <= 0)
+        {
+            _isGathering = false;
+        }
+    }
+    public IEnumerator Gather(AgentScript agent)
+    {
+        // change resource mesh if needed,
         // send player back to deposit
 
         Debug.Log("GatheringStarted");
         agent.AgentState = AgentState.Gathering;
-        agent.ChangeColor(Color.blue);
-        Debug.Log("Start While Lood");
-        while (_currentResQuantity > 0 )
+        while (_isGathering)
         {
-            Debug.Log(Time.time);
             yield return new WaitForSeconds(_timeBetweenGather);
 
-            if (agent.CarriedWood <= agent.MaxWoodCarriable)
+            if (agent.CarriedWood < agent.MaxWoodCarriable && _currentResQuantity > 0)
             {
-                Debug.Log(Time.time);
                 ReduceResource();
                 agent.CarriedWood++;
-                Debug.Log("Gathering");
-                Debug.Log("carried wood: " + agent.CarriedWood);
-                Debug.Log("wood left: " + _currentResQuantity);
+                Debug.Log("Gathering...");
             }
             else
             {
-                Debug.Log("Call;");
-                _currentState = ResourceState.Regenerating;
-                _currentWorkersCount--;
-                _agentsAssignedList.Remove(agent);
-                agent.AgentState = AgentState.Inactive;
-                agent.ChangeColor(Color.black);
-                PlayerScript.PlayerInstance.HasAgentsInSelection();
+                StopGathering(agent);
+
+                if (_currentResQuantity <= 0)
+                {
+                    _currentState = ResourceState.Regenerating;
+                    Debug.Log(name + " Empty, Regenerating...");
+                    yield break;
+                }
+                else
+                {
+                    Debug.Log("Full Agent");
+                    yield break;
+                }
             }
-        }
-        if (_currentResQuantity <= 0)
-        {
-            
-            _currentState = ResourceState.Regenerating;
-            _currentWorkersCount--;
-            agent.AgentState = AgentState.Inactive;
-            agent.ChangeColor(Color.black);
-            _agentsAssignedList.Clear();
-            PlayerScript.PlayerInstance.ActiveAgentsList.Clear();
-            PlayerScript.PlayerInstance.HasAgentsInSelection();
-            Debug.Log("Call1;");
         }
         Debug.Log("GatheringFinished");
     }
+
     private void ResetResource()
     {
         _currentResQuantity = _STARTING_RES_QUANTITY;
@@ -149,6 +147,7 @@ public class ResourceBase : MonoBehaviour
         if (_currentResQuantity >= _STARTING_RES_QUANTITY)
         {
             _currentState = ResourceState.Gatherable;
+            Debug.Log("Resource Ready");
         }
     }
     private void ReduceResource()
@@ -157,6 +156,7 @@ public class ResourceBase : MonoBehaviour
         if (_currentResQuantity <= 0)
         {
             _currentState = ResourceState.Depleted;
+            Debug.Log("Resource Depleted");
         }
     }
     private IEnumerator Respawn()
@@ -165,11 +165,9 @@ public class ResourceBase : MonoBehaviour
 
         while (_currentResQuantity < _STARTING_RES_QUANTITY)
         {
-            yield return new WaitForSeconds(3);
+            yield return new WaitForSeconds(_timeToRegenOne);
             IncreaseResource();
             
         }
-        
-        yield return new WaitForSeconds(2);
     }
 }

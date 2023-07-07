@@ -78,6 +78,7 @@ public class PlayerScript : MonoBehaviour
     public CinemachineVirtualCamera InGameCamera { get { return _gameCam; } }
     public List<AgentScript> ActiveAgentsList { get { return _activeAgentsList; } }
 
+    // Main
     private void Awake() 
     {
         PlayerSingleton();
@@ -88,7 +89,6 @@ public class PlayerScript : MonoBehaviour
         SubscribeToEvents();
         ResetPlayer();
     }
-
     private void Update()
     {
         Move(MovementInput);
@@ -110,7 +110,7 @@ public class PlayerScript : MonoBehaviour
     // G&S
     public Vector3 CursorPosition { get { return transform.position; } }
 
-    // Methods
+    // Essentials
     private void PlayerSingleton()
     {
         if (_playerInstance == null)
@@ -201,6 +201,7 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+    // Player Spawn
     public void ResetPlayer() 
     {
         _gameManager.ResetScore();
@@ -224,12 +225,14 @@ public class PlayerScript : MonoBehaviour
         TogglePlayerMesh(true);
         MoveToSpawnPoint(pos);
     }
+
+    // PlayerUI
     private void LinkUI()
     {
         //Debug.Log("LinkUI Function Call!");
     }
 
-    // Gameplay
+    // Player Movement
     private void Move(Vector2 input)
     {
         _moveVector.x = input.x * _moveSpeed;
@@ -280,21 +283,24 @@ public class PlayerScript : MonoBehaviour
             _playerCC.Move(Vector3.down* 9.81f * Time.deltaTime);
         }
     }
-    private void AddAgentToSelection(AgentScript agent)
-    {
-        _activeAgentsList.Add(agent);
-        agent.AgentState = AgentState.Selected;
-        agent.ChangeColor(Color.green);
-        agent.StopAgent();
-    }
-    public void RemoveAgentFromSelection(AgentScript agent)
-    {
-        _activeAgentsList.Remove(agent.GetComponent<AgentScript>());
-        agent.GetComponent<AgentScript>().AgentState = AgentState.Inactive;
-        agent.ChangeColor(Color.black);
-    }
+    
+    // Selection General
     private void ToggleAgentSelection(AgentScript agent)
     {
+        if (agent.AgentState == AgentState.Gathering)
+        {
+            agent.ResourceToInteractWith.StopGathering(agent);
+            agent.StopAgentCoroutine(agent.RunningGatherCoR);
+        }
+        else if (agent.AgentState == AgentState.Building)
+        {
+            agent.StopAgentCoroutine(agent.RunningBuildCoR);
+        }
+        else if (agent.AgentState == AgentState.Attacking)
+        {
+            agent.StopAgentCoroutine(agent.RunningAttackCoR);
+        }
+
         if (agent.AgentState != AgentState.Selected)
         {
             AddAgentToSelection(agent);
@@ -304,7 +310,34 @@ public class PlayerScript : MonoBehaviour
             RemoveAgentFromSelection(agent);
         }
     }
+    private void AddAgentToSelection(AgentScript agent)
+    {
+        _activeAgentsList.Add(agent);
+        agent.AgentState = AgentState.Selected;
+        agent.StopAgent();
+    }
+    public void RemoveAgentFromSelection(AgentScript agent)
+    {
+        _activeAgentsList.Remove(agent.GetComponent<AgentScript>());
+        agent.GetComponent<AgentScript>().AgentState = AgentState.Inactive;
+    }
+    private void ResetSelection(bool input)
+    {
+        if (input)
+        {
+            var copy = new AgentScript[_activeAgentsList.Count];
+            _activeAgentsList.CopyTo(copy, 0);
 
+            foreach (var agent in copy)
+            {
+                RemoveAgentFromSelection(agent);
+            }
+            _activeAgentsList.Clear();
+            HasAgentsInSelection();
+        }
+    }
+
+    // Selection AoE
     private void StartSelectionArea()
     {
         _xPoint1 = 0;
@@ -373,6 +406,8 @@ public class PlayerScript : MonoBehaviour
             _state = PlayerStates.Rest;
         }
     }
+    
+    // Selection Move
     private void MoveAgent(AgentScript agent, Vector3 pos)
     {
         agent.MoveTargetPosition = pos;
@@ -392,37 +427,84 @@ public class PlayerScript : MonoBehaviour
         return false;        
     }
     
+    // Selection Task
     private void AssignTask()
     {
-        //var copyList = new List<AgentScript>(_activeAgentsList);
-
         foreach (var agent in _activeAgentsList)
         {
-            //agent.MovingTowardsInteractable = true;
-            //MoveAgent(agent, _resourceInTrigger.transform.position);
             agent.MovingTowardsInteractable = true;
-            MoveAgent(agent, _resourceInTrigger.transform.position); 
-            //copyList.Remove(agent);
-            //_state = PlayerStates.Rest;
+            agent.ResourceToInteractWith = _resourceInTrigger;
+            MoveAgent(agent, _resourceInTrigger.transform.position);
         }
-        //_activeAgentsList.Clear();
+        ActiveAgentsList.Clear();
+        HasAgentsInSelection();
     }
-    private void ResetSelection(bool input)
-    {
-        if (input)
-        {
-            var copy = new AgentScript[_activeAgentsList.Count];
-            _activeAgentsList.CopyTo(copy, 0);
-
-            foreach (var agent in copy)
-            {
-                RemoveAgentFromSelection(agent);
-            }
-            _activeAgentsList.Clear();
-            HasAgentsInSelection();
-        }
-    }
+    
     // Inputs
+    private void ButtonSouthBehaviour(bool input)
+    {
+        switch (_state)
+        {
+            case PlayerStates.Rest:
+                if (input)
+                {
+                    if (_agentsInTrigger.Count == 0 && _activeAgentsList.Count == 0)
+                    {
+                        StartSelectionArea();
+                    }
+                    else if (_agentsInTrigger.Count > 0)
+                    {
+                        foreach (var agent in _agentsInTrigger)
+                        {
+                            ToggleAgentSelection(agent);
+                        }
+                        HasAgentsInSelection();
+                    }
+                }
+                break;
+
+            case PlayerStates.Selecting:
+                if (!input)
+                {
+                    StopSelectionArea();
+                }
+                break;
+
+            case PlayerStates.HoldingSelection:
+                if (input)
+                {
+                    if (_resourceInTrigger != null)
+                    {
+                        AssignTask();
+                    }
+                    else if (_agentsInTrigger.Count == 0 && _activeAgentsList.Count > 0)
+                    {
+                        if (SelectedPositionIsOnNavMesh())
+                        {
+                            foreach (var agent in _activeAgentsList)
+                            {
+                                MoveAgent(agent, transform.position);
+                            }
+                        }
+                    }
+                    else if (_agentsInTrigger.Count > 0)
+                    {
+                        foreach (var agent in _agentsInTrigger)
+                        {
+                            ToggleAgentSelection(agent);
+                        }
+
+                        HasAgentsInSelection();
+                    }
+                }
+                break;
+
+            default:
+                Debug.Log("Default Case Button South Behaviour");
+                break;
+        }
+    }
+
     private void OnMove(InputAction.CallbackContext context) 
     {
         MovementInput = context.ReadValue<Vector2>();
@@ -469,70 +551,7 @@ public class PlayerScript : MonoBehaviour
         Debug.Log("StartPlayer");
     }
 
-    private void ButtonSouthBehaviour(bool input)
-    {
-        switch (_state)
-        {
-            case PlayerStates.Rest:
-                if (input)
-                {
-                    if (_agentsInTrigger.Count == 0 && _activeAgentsList.Count == 0)
-                    {
-                        StartSelectionArea();
-                    }
-                    else if (_agentsInTrigger.Count > 0)
-                    {
-                        foreach (var agent in _agentsInTrigger)
-                        {
-                            ToggleAgentSelection(agent);
-                        }
-                        HasAgentsInSelection();
-                    } 
-                }
-                break;
-
-            case PlayerStates.Selecting:
-                if (!input)
-                {
-                    StopSelectionArea();
-                }
-                break;
-
-            case PlayerStates.HoldingSelection:
-                if (input)
-                {
-                    if (_resourceInTrigger != null)
-                    {
-                        AssignTask();
-                    }
-                    else if (_agentsInTrigger.Count == 0 && _activeAgentsList.Count > 0)
-                    {
-                        if (SelectedPositionIsOnNavMesh())
-                        {
-                            foreach (var agent in _activeAgentsList)
-                            {
-                                MoveAgent(agent, transform.position);
-                            }
-                            //MoveAgent(transform.position);
-                        }
-                    }
-                    else if(_agentsInTrigger.Count > 0)
-                    {
-                        foreach (var agent in _agentsInTrigger)
-                        {
-                            ToggleAgentSelection(agent);
-                        }
-
-                        HasAgentsInSelection();
-                    }
-                }
-                break;
-
-            default:
-                Debug.Log("Default Case Button South Behaviour");
-                break;
-        }
-    }
+    // OnTrigger
     private void OnTriggerEnter(Collider other)
     {
         if (other.GetComponent<AgentScript>())

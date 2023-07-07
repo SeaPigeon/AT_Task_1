@@ -42,6 +42,30 @@ public class AgentScript : MonoBehaviour
     private float _waitTimer;
     private bool _hasMoveTarget;
     private MeshRenderer _meshRenderer;
+    private ResourceBase _resourceToInteractWith;
+    private Coroutine _runningGatherCor;
+    private BuildingBase _buildingToInteractWith;
+    private Coroutine _runningBuildCor;
+    private EnemyScript _enemyToAttack;
+    private Coroutine _runningAttackCor;
+
+    // G&S
+    public int MaxClothCarriable { get { return _MAX_CLOTH_CARRIED; } set { _MAX_CLOTH_CARRIED = value; } }
+    public int MaxIronCarriable { get { return _MAX_IRON_CARRIED; } set { _MAX_IRON_CARRIED = value; } }
+    public int MaxWoodCarriable { get { return _MAX_WOOD_CARRIED; } set { _MAX_WOOD_CARRIED = value; } }
+    public int CarriedCloth { get { return _carriedCloth; } set { _carriedCloth = value; } }
+    public int CarriedIron { get { return _carriedIron; } set { _carriedIron = value; } }
+    public int CarriedWood { get { return _carriedWood; } set { _carriedWood = value; } }
+    public bool MovingTowardsInteractable { get { return _movingTowardsInteractable; } set { _movingTowardsInteractable = value; } }
+    public Vector3 MoveTargetPosition { get { return _targetPos; } set { _targetPos = value; } }
+    public AgentState AgentState { get { return _agentState; } set { _agentState = value; } }
+    public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } }
+    public ResourceBase ResourceToInteractWith { get { return _resourceToInteractWith; } set { _resourceToInteractWith = value; } }
+    public Coroutine RunningGatherCoR { get { return _runningGatherCor; } set { _runningGatherCor = value; } }
+    public BuildingBase BuildingToInteractWith { get { return _buildingToInteractWith; } set { _buildingToInteractWith = value; } }
+    public Coroutine RunningBuildCoR { get { return _runningBuildCor; } set { _runningBuildCor = value; } }
+    public EnemyScript EnemyToAttack { get { return _enemyToAttack; } set { _enemyToAttack = value; } }
+    public Coroutine RunningAttackCoR { get { return _runningAttackCor; } set { _runningAttackCor = value; } }
 
     private void Start() 
     {
@@ -53,19 +77,17 @@ public class AgentScript : MonoBehaviour
         switch (_agentState)
         {
             case AgentState.Inactive:
-
-
-
-                // Change color based on the state
-
-
-
+                ChangeColor(Color.gray);
                 //StartIdle();
                 break;
+
             case AgentState.Idle:
+                ChangeColor(Color.black);
                 Idle();
                 break;
+
             case AgentState.Moving:
+                ChangeColor(Color.yellow);
                 Move(_targetPos);
                 if (!_navMeshAgent.pathPending && 
                     _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
@@ -73,41 +95,37 @@ public class AgentScript : MonoBehaviour
                     StopAgent();
                     if (_movingTowardsInteractable)
                     {
-                        var resource = FindObjectOfType<ResourceBase>();// hard coded, to be fix, pass reference properly
-                        resource.StartGathering(this);
+                        _resourceToInteractWith.StartGathering(this);
                         _movingTowardsInteractable = false;
                     }
                 }
-                
                 break;
+
             case AgentState.Attacking:
+                ChangeColor(Color.red);
                 break;
+
             case AgentState.Building:
+                ChangeColor(Color.blue);
                 break;
+
             case AgentState.Gathering:
+                ChangeColor(Color.cyan);
                 break;
+
             case AgentState.Selected:
+                ChangeColor(Color.green);
                 break;
+
             default:
+                ChangeColor(Color.white);
                 Debug.Log("Agent State ERROR");
                 break;
         }
         //Rotate(_targetPos);
     }
 
-    // G&S
-    public int MaxClothCarriable { get { return _MAX_CLOTH_CARRIED; } set { _MAX_CLOTH_CARRIED = value; } }
-    public int MaxIronCarriable  { get { return _MAX_IRON_CARRIED; } set { _MAX_IRON_CARRIED = value; } }
-    public int MaxWoodCarriable { get { return _MAX_WOOD_CARRIED; } set { _MAX_WOOD_CARRIED = value; } }
-    public int CarriedCloth { get { return _carriedCloth; } set { _carriedCloth = value; } }
-    public int CarriedIron { get { return _carriedIron; } set { _carriedIron = value; } }
-    public int CarriedWood { get { return _carriedWood; } set { _carriedWood = value; } }
-    public bool MovingTowardsInteractable { get { return _movingTowardsInteractable; } set { _movingTowardsInteractable = value; } }
-    public Vector3 MoveTargetPosition { get { return _targetPos; } set { _targetPos = value; } }
-    public AgentState AgentState { get { return _agentState; } set { _agentState = value; } }
-    public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } }
-
-    // Methods
+    // Essentials
     private void SetUpReferences()
     {
         _gameManager = GameManagerScript.GMInstance;
@@ -125,7 +143,11 @@ public class AgentScript : MonoBehaviour
         _gameManager.AgentsInGame.Add(this);
         _hasMoveTarget = false;
         _movingTowardsInteractable = false;
+        _buildingToInteractWith = null;
+        _resourceToInteractWith = null;
+        _enemyToAttack = null;
     }
+    
 
     // Movement
     private void Move(Vector3 targetPos)
@@ -145,6 +167,8 @@ public class AgentScript : MonoBehaviour
         _hasMoveTarget = false;
         _isPatrolling = false;
     }
+
+    // Idle
     private void StartIdle()
     {
         if (!_isWaiting)
@@ -184,7 +208,6 @@ public class AgentScript : MonoBehaviour
         _isPatrolling = false;
         _agentState = AgentState.Inactive;
     }
-
     private Vector3 GenerateRandomPoint(Vector3 agentPos, int range)
     {
         Vector3 randomPoint = agentPos + Random.insideUnitSphere * range;
@@ -193,11 +216,24 @@ public class AgentScript : MonoBehaviour
         return hit.position;
     }
 
+    // General
     public void ChangeColor(Color color)
     {
-        _meshRenderer.material.color = color;
+        if (_meshRenderer.material.color != color)
+        {
+            _meshRenderer.material.color = color;
+        }
     }
-
+    public void StopAgentCoroutine(Coroutine coroutine)
+    {
+        if (coroutine != null)
+        {
+            StopCoroutine(coroutine);
+            coroutine = null;
+            Debug.Log("call");
+        }
+    }
+    
     // Actions
     private IEnumerator Attack()
     {
