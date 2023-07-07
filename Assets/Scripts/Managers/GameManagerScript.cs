@@ -32,7 +32,7 @@ public class GameManagerScript : MonoBehaviour
 
     [SerializeField] List<AgentScript> _agentsInGame;
     [SerializeField] List<ResourceBase> _resourcesInGame;
-    //[SerializeField] List<BuildingBase> _buildingsInGame;
+    [SerializeField] List<BuildingBase> _buildingsInGame;
 
     public event Action OnGMSetUpComplete;
 
@@ -65,6 +65,7 @@ public class GameManagerScript : MonoBehaviour
     
     public List<AgentScript> AgentsInGame { get { return _agentsInGame; } set { _agentsInGame = value; } }
     public List<ResourceBase> ResourcesInGame { get { return _resourcesInGame; } set { _resourcesInGame = value; } }
+    public List<BuildingBase> BuildingsInGame { get { return _buildingsInGame; } set { _buildingsInGame = value; } }
 
     public int TotalCloth { get { return _totalCloth; } set { _totalCloth = value; } }
     public int TotalIron { get { return _totalIron; } set { _totalIron = value; } }

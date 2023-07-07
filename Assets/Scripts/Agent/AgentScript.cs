@@ -11,7 +11,10 @@ public enum AgentState
     Attacking,
     Building,
     Gathering,
-    Selected
+    Interacting,
+    Selected,
+    Tired,
+    Sleeping
 }
 public class AgentScript : MonoBehaviour
 {
@@ -25,14 +28,15 @@ public class AgentScript : MonoBehaviour
     [SerializeField] int _MAX_WOOD_CARRIED = 4;
 
     [Header("Debug")]
-    private AgentState _agentState;
+    [SerializeField] private AgentState _agentState;
+    [SerializeField] private int _carriedWood;
+    [SerializeField] private bool _movingTowardsInteractable;
+    [SerializeField] private bool _isKnight;
     private Vector3 _targetPos;
     private Vector3 _targetRotation;
     private NavMeshAgent _navMeshAgent;
     private int _carriedCloth;
     private int _carriedIron;
-    [SerializeField] private int _carriedWood;
-    [SerializeField] private bool _movingTowardsInteractable;
     private ResourceType _resType;
     private GameManagerScript _gameManager;
     private Vector3 _patrolPoint;
@@ -48,6 +52,8 @@ public class AgentScript : MonoBehaviour
     private Coroutine _runningBuildCor;
     private EnemyScript _enemyToAttack;
     private Coroutine _runningAttackCor;
+    private Coroutine _runningInteracCor;
+    private float _currentInteractionDuration;
 
     // G&S
     public int MaxClothCarriable { get { return _MAX_CLOTH_CARRIED; } set { _MAX_CLOTH_CARRIED = value; } }
@@ -58,7 +64,7 @@ public class AgentScript : MonoBehaviour
     public int CarriedWood { get { return _carriedWood; } set { _carriedWood = value; } }
     public bool MovingTowardsInteractable { get { return _movingTowardsInteractable; } set { _movingTowardsInteractable = value; } }
     public Vector3 MoveTargetPosition { get { return _targetPos; } set { _targetPos = value; } }
-    public AgentState AgentState { get { return _agentState; } set { _agentState = value; } }
+    public AgentState ActiveAgentState { get { return _agentState; } set { _agentState = value; } }
     public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } }
     public ResourceBase ResourceToInteractWith { get { return _resourceToInteractWith; } set { _resourceToInteractWith = value; } }
     public Coroutine RunningGatherCoR { get { return _runningGatherCor; } set { _runningGatherCor = value; } }
@@ -66,6 +72,8 @@ public class AgentScript : MonoBehaviour
     public Coroutine RunningBuildCoR { get { return _runningBuildCor; } set { _runningBuildCor = value; } }
     public EnemyScript EnemyToAttack { get { return _enemyToAttack; } set { _enemyToAttack = value; } }
     public Coroutine RunningAttackCoR { get { return _runningAttackCor; } set { _runningAttackCor = value; } }
+    public Coroutine RunningInteractCoR { get { return _runningInteracCor; } set { _runningInteracCor = value; } }
+    public float CurrentInteractionDuration { get { return _currentInteractionDuration; } set { _currentInteractionDuration = value; } }
 
     private void Start() 
     {
@@ -95,7 +103,19 @@ public class AgentScript : MonoBehaviour
                     StopAgent();
                     if (_movingTowardsInteractable)
                     {
-                        _resourceToInteractWith.StartGathering(this);
+                        if (_resourceToInteractWith != null)
+                        {
+                            _resourceToInteractWith.StartGathering(this);
+                        }
+                        else if (_buildingToInteractWith != null)
+                        {
+                            _buildingToInteractWith.StartInteract(this);
+                        }
+                        else if (_enemyToAttack != null)
+                        {
+                            //_enemyToAttack.StartToAttack(this);
+                        }
+                        
                         _movingTowardsInteractable = false;
                     }
                 }
@@ -108,7 +128,9 @@ public class AgentScript : MonoBehaviour
             case AgentState.Building:
                 ChangeColor(Color.blue);
                 break;
-
+            case AgentState.Interacting:
+                ChangeColor(Color.magenta);
+                break;
             case AgentState.Gathering:
                 ChangeColor(Color.cyan);
                 break;
@@ -146,6 +168,7 @@ public class AgentScript : MonoBehaviour
         _buildingToInteractWith = null;
         _resourceToInteractWith = null;
         _enemyToAttack = null;
+        _currentInteractionDuration = 0;
     }
     
 

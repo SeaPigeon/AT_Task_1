@@ -46,8 +46,8 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] List<AgentScript> _activeAgentsList;
     [SerializeField] List<AgentScript> _agentsInTrigger;
     [SerializeField] ResourceBase _resourceInTrigger;
-    [SerializeField] List<Collider> _buildingsInTrigger;
-    [SerializeField] List<Collider> _enemyInTrigger;
+    [SerializeField] BuildingBase _buildingInTrigger;
+    [SerializeField] EnemyScript _enemyInTrigger;
     private CinemachineVirtualCamera _gameCam;
     private static PlayerScript _playerInstance;
     private GameManagerScript _gameManager;
@@ -287,25 +287,27 @@ public class PlayerScript : MonoBehaviour
     // Selection General
     private void ToggleAgentSelection(AgentScript agent)
     {
-        if (agent.AgentState == AgentState.Gathering)
+        if (agent.ActiveAgentState == AgentState.Gathering)
         {
             agent.ResourceToInteractWith.StopGathering(agent);
             agent.StopAgentCoroutine(agent.RunningGatherCoR);
         }
-        else if (agent.AgentState == AgentState.Building)
+        else if (agent.ActiveAgentState == AgentState.Interacting)
         {
+            agent.BuildingToInteractWith.StopInteracting(agent);
             agent.StopAgentCoroutine(agent.RunningBuildCoR);
         }
-        else if (agent.AgentState == AgentState.Attacking)
+        else if (agent.ActiveAgentState == AgentState.Attacking)
         {
+            //agent.EnemyToAttack.StopAttacking(agent);
             agent.StopAgentCoroutine(agent.RunningAttackCoR);
         }
 
-        if (agent.AgentState != AgentState.Selected)
+        if (agent.ActiveAgentState != AgentState.Selected)
         {
             AddAgentToSelection(agent);
         }
-        else if (agent.AgentState == AgentState.Selected)
+        else if (agent.ActiveAgentState == AgentState.Selected)
         {
             RemoveAgentFromSelection(agent);
         }
@@ -313,13 +315,13 @@ public class PlayerScript : MonoBehaviour
     private void AddAgentToSelection(AgentScript agent)
     {
         _activeAgentsList.Add(agent);
-        agent.AgentState = AgentState.Selected;
+        agent.ActiveAgentState = AgentState.Selected;
         agent.StopAgent();
     }
     public void RemoveAgentFromSelection(AgentScript agent)
     {
         _activeAgentsList.Remove(agent.GetComponent<AgentScript>());
-        agent.GetComponent<AgentScript>().AgentState = AgentState.Inactive;
+        agent.GetComponent<AgentScript>().ActiveAgentState = AgentState.Inactive;
     }
     private void ResetSelection(bool input)
     {
@@ -411,7 +413,7 @@ public class PlayerScript : MonoBehaviour
     private void MoveAgent(AgentScript agent, Vector3 pos)
     {
         agent.MoveTargetPosition = pos;
-        agent.AgentState = AgentState.Moving;
+        agent.ActiveAgentState = AgentState.Moving;
     }
     private bool SelectedPositionIsOnNavMesh()
     {
@@ -432,9 +434,27 @@ public class PlayerScript : MonoBehaviour
     {
         foreach (var agent in _activeAgentsList)
         {
+            Vector3 posToMove = Vector3.zero;
+
             agent.MovingTowardsInteractable = true;
-            agent.ResourceToInteractWith = _resourceInTrigger;
-            MoveAgent(agent, _resourceInTrigger.transform.position);
+            
+            if (_resourceInTrigger != null)
+            {
+                agent.ResourceToInteractWith = _resourceInTrigger;
+                posToMove = _resourceInTrigger.transform.position;
+            }
+            else if (_buildingInTrigger != null)
+            {
+                agent.BuildingToInteractWith = _buildingInTrigger;
+                posToMove = _buildingInTrigger.transform.position;
+            }
+            else if (_enemyInTrigger != null)
+            {
+                agent.EnemyToAttack = _enemyInTrigger;
+                posToMove = _enemyInTrigger.transform.position;
+            }
+            
+            MoveAgent(agent, posToMove);
         }
         ActiveAgentsList.Clear();
         HasAgentsInSelection();
@@ -473,7 +493,9 @@ public class PlayerScript : MonoBehaviour
             case PlayerStates.HoldingSelection:
                 if (input)
                 {
-                    if (_resourceInTrigger != null)
+                    if (_resourceInTrigger != null || 
+                        _buildingInTrigger != null || 
+                        _enemyInTrigger != null)
                     {
                         AssignTask();
                     }
@@ -562,6 +584,14 @@ public class PlayerScript : MonoBehaviour
         {
             _resourceInTrigger = other.GetComponent<ResourceBase>();
         }
+        else if (other.GetComponent<BuildingBase>())
+        {
+            _buildingInTrigger = other.GetComponent<BuildingBase>();
+        }
+        else if (other.GetComponent<EnemyScript>())
+        {
+            _enemyInTrigger = other.GetComponent<EnemyScript>();
+        }
     }
     private void OnTriggerExit(Collider other)
     {
@@ -572,6 +602,14 @@ public class PlayerScript : MonoBehaviour
         else if (other.GetComponent<ResourceBase>())
         {
             _resourceInTrigger = null;
+        }
+        else if (other.GetComponent<BuildingBase>())
+        {
+            _buildingInTrigger = null;
+        }
+        else if (other.GetComponent<EnemyScript>())
+        {
+            _enemyInTrigger = null;
         }
     }
 }

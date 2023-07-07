@@ -26,13 +26,14 @@ public class ResourceBase : MonoBehaviour
     [SerializeField] private int _MAX_WORKERS = 3;
 
     [Header("Debug")]
-    [SerializeField] List<AgentScript> _agentsAssignedList;
-    private ResourceType _resourceType;
+    [SerializeField] private ResourceType _resourceType;
     [SerializeField] private ResourceState _currentState;
+    [SerializeField] private int _currentWorkersCount;
     [SerializeField] private int _currentResQuantity;
     [SerializeField] private bool _isGathering;
+    [SerializeField] List<AgentScript> _agentsAssignedList;
     //private MeshRenderer _mesh;
-    [SerializeField] private int _currentWorkersCount;
+    
     private GameManagerScript _gameManager;
 
     // G&S
@@ -73,7 +74,7 @@ public class ResourceBase : MonoBehaviour
     }
     public void StartGathering(AgentScript agent)
     {
-        if (_currentState == ResourceState.Gatherable)
+        if (_currentState == ResourceState.Gatherable && _currentWorkersCount < _MAX_WORKERS)
         {
             _agentsAssignedList.Add(agent);
             _currentWorkersCount++;
@@ -82,14 +83,13 @@ public class ResourceBase : MonoBehaviour
         }
         else
         {
-            Debug.Log("Resource Not Available ATM, Try Again Later");
-            // reset player state etc...
+            agent.ActiveAgentState = AgentState.Inactive;
         }
     }
     public void StopGathering(AgentScript agent)
     {
         _currentWorkersCount--;
-        agent.AgentState = AgentState.Inactive; // if not from click SendBackToDeposit Later
+        agent.ActiveAgentState = AgentState.Inactive; // if not from click SendBackToDeposit Later
         _agentsAssignedList.Remove(agent);
 
         if (_currentResQuantity <= 0 || _agentsAssignedList.Count <= 0)
@@ -103,7 +103,7 @@ public class ResourceBase : MonoBehaviour
         // send player back to deposit
 
         Debug.Log("GatheringStarted");
-        agent.AgentState = AgentState.Gathering;
+        agent.ActiveAgentState = AgentState.Gathering;
         while (_isGathering)
         {
             yield return new WaitForSeconds(_timeBetweenGather);
