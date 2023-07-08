@@ -84,7 +84,7 @@ public class ResourceBase : MonoBehaviour
         {
             case AgentClass.Villager:
                 if (_currentState == ResourceState.Gatherable &&
-            _currentWorkersCount < _MAX_WORKERS)
+                    _currentWorkersCount < _MAX_WORKERS)
                 {
                     _agentsAssignedList.Add(agent);
                     _currentWorkersCount++;
@@ -229,11 +229,7 @@ public class ResourceBase : MonoBehaviour
     {
         _currentState = ResourceState.Regenerating;
 
-        while (_currentResQuantity < _STARTING_RES_QUANTITY)
-        {
-            yield return new WaitForSeconds(_timeToRegenOne);
-            IncreaseResource();
-            
-        }
+        yield return new WaitForSeconds(_timeToRegenOne);
+        ResetResource();
     }
 }

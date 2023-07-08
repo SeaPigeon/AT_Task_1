@@ -65,16 +65,17 @@ public class AgentScript : MonoBehaviour
     public int CarriedWood { get { return _carriedWood; } set { _carriedWood = value; } }
     public bool MovingTowardsInteractable { get { return _movingTowardsInteractable; } set { _movingTowardsInteractable = value; } }
     public Vector3 MoveTargetPosition { get { return _targetPos; } set { _targetPos = value; } }
-    public AgentState ActiveAgentState { get { return _agentState; } set { _agentState = value; } }
-    public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } }
     public ResourceBase ResourceToInteractWith { get { return _resourceToInteractWith; } set { _resourceToInteractWith = value; } }
-    public Coroutine ActiveCoR { get { return _activeCor; } set { _activeCor = value; } }
     public BuildingBase BuildingToInteractWith { get { return _buildingToInteractWith; } set { _buildingToInteractWith = value; } }
     public EnemyScript EnemyToAttack { get { return _enemyToAttack; } set { _enemyToAttack = value; } }
+    public AgentState ActiveAgentState { get { return _agentState; } set { _agentState = value; } }
+    public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } }
+    public Coroutine ActiveCoR { get { return _activeCor; } set { _activeCor = value; } }
     public Slider AgentSlider { get { return _slider; } }
     public AgentClass AgentClass { get { return _agentClass; } set { _agentClass = value; } }
     public GameObject VillagerMesh { get { return _villagerMesh; } }
     public GameObject KnightMesh { get { return _knightMesh; } }
+    public bool HasMoveTarget { get { return _hasMoveTarget; } set { _hasMoveTarget = value; } }
 
     private void Start() 
     {
@@ -106,6 +107,7 @@ public class AgentScript : MonoBehaviour
                     StopAgent();
                     if (_movingTowardsInteractable)
                     {
+                        PlayerScript.PlayerInstance.ActiveAgentsList.Clear();
                         if (_resourceToInteractWith != null)
                         {
                             _resourceToInteractWith.StartGathering(this);
@@ -176,6 +178,17 @@ public class AgentScript : MonoBehaviour
         _sliderCanvas = _slider.GetComponentInParent<Canvas>();
         _sliderCanvas.enabled = false;
 
+    }
+    public void ResetAgent()
+    {
+        NavMeshAgent.isStopped = true;
+        MoveTargetPosition = Vector3.zero;
+        MovingTowardsInteractable = false;
+        ResourceToInteractWith = null;
+        BuildingToInteractWith = null;
+        EnemyToAttack = null;
+        ActiveCoR = null;
+        ActiveAgentState = AgentState.Inactive;
     }
     
     // Movement
@@ -284,7 +297,7 @@ public class AgentScript : MonoBehaviour
             _agentState == AgentState.Building)
         {
             _sliderCanvas.enabled = true;
-            FillBar(time);
+            StartCoroutine(FillBar(time));
         }
         else
         {
@@ -292,14 +305,21 @@ public class AgentScript : MonoBehaviour
         }
         
     }
-    private IEnumerator FillBar(float time)
+    private IEnumerator FillBar(float maxTime)
     {
-        var startTime = Time.time;
-        while (Time.time < startTime + time)
+        var startTime = 0f;
+        _slider.value = 0f;
+        
+        while (startTime < maxTime)
         {
-            _slider.value += Time.deltaTime;
+            startTime += Time.deltaTime;
+            float sliderValue = startTime / maxTime;
+            _slider.value = sliderValue;
+            yield return null;
         }
-        yield break;
+
+        _slider.value = 1f;
+        _sliderCanvas.enabled = false;
     }
     // Actions
     private IEnumerator Attack()

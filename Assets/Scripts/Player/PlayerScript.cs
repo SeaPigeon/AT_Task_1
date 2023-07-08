@@ -320,6 +320,7 @@ public class PlayerScript : MonoBehaviour
             default:
                 break;
         }
+        agent.EnableAgentUI(0);
 
         if (agent.ActiveAgentState != AgentState.Selected)
         {
@@ -430,6 +431,7 @@ public class PlayerScript : MonoBehaviour
     // Selection Move
     private void MoveAgent(AgentScript agent, Vector3 pos)
     {
+        agent.HasMoveTarget = false;
         agent.MoveTargetPosition = pos;
         agent.ActiveAgentState = AgentState.Moving;
     }
@@ -452,6 +454,8 @@ public class PlayerScript : MonoBehaviour
     {
         foreach (var agent in _activeAgentsList)
         {
+            agent.ResetAgent();
+
             Vector3 posToMove = Vector3.zero;
 
             agent.MovingTowardsInteractable = true;
@@ -474,7 +478,6 @@ public class PlayerScript : MonoBehaviour
             
             MoveAgent(agent, posToMove);
         }
-        ActiveAgentsList.Clear();
         HasAgentsInSelection();
     }
     
@@ -523,6 +526,7 @@ public class PlayerScript : MonoBehaviour
                         {
                             foreach (var agent in _activeAgentsList)
                             {
+                                agent.MovingTowardsInteractable = false;
                                 MoveAgent(agent, transform.position);
                             }
                         }

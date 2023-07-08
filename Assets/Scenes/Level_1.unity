@@ -309,6 +309,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1047032079867577236, guid: 414425e9e90b0f04f93657890d6b022c, type: 3}
+      propertyPath: _STARTING_RES_QUANTITY
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2883403290234010582, guid: 414425e9e90b0f04f93657890d6b022c, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 8
@@ -547,7 +551,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1031954030411544877, guid: f0a47f05b71db2e4e9f6134b1b00a864, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 1031954030411544877, guid: f0a47f05b71db2e4e9f6134b1b00a864, type: 3}
       propertyPath: m_LocalPosition.z
@@ -555,11 +559,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1031954030411544877, guid: f0a47f05b71db2e4e9f6134b1b00a864, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7372774
       objectReference: {fileID: 0}
     - target: {fileID: 1031954030411544877, guid: f0a47f05b71db2e4e9f6134b1b00a864, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0.67559016
       objectReference: {fileID: 0}
     - target: {fileID: 6030006769767661357, guid: f0a47f05b71db2e4e9f6134b1b00a864, type: 3}
       propertyPath: m_Name

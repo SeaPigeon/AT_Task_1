@@ -39,11 +39,11 @@ public class BuildingBase : MonoBehaviour
             case BuildingType.Armory:
                 if (_currentInteractions < _MAX_INTERACTIONS)
                 {
-                    Debug.Log("call");
                     _agentsAssignedList.Add(agent);
                     _currentInteractions++;
                     agent.ActiveAgentState = AgentState.Interacting;
                     agent.ActiveCoR = null;
+                    agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
                     agent.ActiveCoR = StartCoroutine(Interact(agent));
                 }
                 else
@@ -54,13 +54,15 @@ public class BuildingBase : MonoBehaviour
             case BuildingType.Deposit:
                 if (agent.AgentClass != AgentClass.Knight)
                 {
-                    if (_currentInteractions < _MAX_INTERACTIONS)
+                    if (_currentInteractions < _MAX_INTERACTIONS && 
+                        (agent.CarriedRock > 0 || agent.CarriedWood > 0))
                     {
                         Debug.Log("call");
                         _agentsAssignedList.Add(agent);
                         _currentInteractions++;
                         agent.ActiveAgentState = AgentState.Interacting;
                         agent.ActiveCoR = null;
+                        agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
                         agent.ActiveCoR = StartCoroutine(Interact(agent));
                     }
                     else
