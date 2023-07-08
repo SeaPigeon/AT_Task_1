@@ -110,7 +110,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _MAX_NUMBER_OF_AGENTS: 5
-  _prefab: {fileID: 1852728807939119281, guid: a452363cdc42e324ab4221478f86ebc0, type: 3}
+  _prefab: {fileID: 1852728807939119281, guid: b12f1c651abd05b41b711a3a595b0259, type: 3}
   _spawnPoint: {fileID: 3534086955787245460}
   _spawnTime: 10
   _state: 0

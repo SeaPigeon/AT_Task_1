@@ -16,9 +16,16 @@ public enum AgentState
     Selected,
     Knight
 }
+public enum AgentClass
+{
+    Villager,
+    Knight
+}
 public class AgentScript : MonoBehaviour
 {
     [Header("Agent Variables")]
+    [SerializeField] GameObject _villagerMesh;
+    [SerializeField] GameObject _knightMesh;
     [SerializeField] float _moveSpeed;
     [SerializeField] float _rotationSpeed;
     [SerializeField] int _idleWalkRange = 10;
@@ -27,16 +34,17 @@ public class AgentScript : MonoBehaviour
     [SerializeField] int _MAX_WOOD_CARRIED = 4;
 
     [Header("Debug")]
+    [SerializeField] private GameObject _stateIndicator;
     [SerializeField] private AgentState _agentState;
+    [SerializeField] private AgentClass _agentClass;
     [SerializeField] private int _carriedRock;
     [SerializeField] private int _carriedWood;
     [SerializeField] private bool _movingTowardsInteractable;
-    [SerializeField] private bool _isKnight;
     [SerializeField] private Slider _slider;
+    [SerializeField] private Canvas _sliderCanvas;
     private Vector3 _targetPos;
     private Vector3 _targetRotation;
     private NavMeshAgent _navMeshAgent;
-    
     private GameManagerScript _gameManager;
     private Vector3 _patrolPoint;
     private bool _isPatrolling;
@@ -44,15 +52,11 @@ public class AgentScript : MonoBehaviour
     private bool _isWaiting = false;
     private float _waitTimer;
     private bool _hasMoveTarget;
-    private MeshRenderer _meshRenderer;
+    private MeshRenderer _stateIndicatorMeshRenderer;
     private ResourceBase _resourceToInteractWith;
-    private Coroutine _runningGatherCor;
     private BuildingBase _buildingToInteractWith;
-    private Coroutine _runningBuildCor;
     private EnemyScript _enemyToAttack;
-    private Coroutine _runningAttackCor;
-    private Coroutine _runningInteracCor;
-    private float _currentInteractionDuration;
+    private Coroutine _activeCor;
 
     // G&S
     public int MaxRockCarriable { get { return _MAX_ROCK_CARRIED; } set { _MAX_ROCK_CARRIED = value; } }
@@ -64,15 +68,13 @@ public class AgentScript : MonoBehaviour
     public AgentState ActiveAgentState { get { return _agentState; } set { _agentState = value; } }
     public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } }
     public ResourceBase ResourceToInteractWith { get { return _resourceToInteractWith; } set { _resourceToInteractWith = value; } }
-    public Coroutine RunningGatherCoR { get { return _runningGatherCor; } set { _runningGatherCor = value; } }
+    public Coroutine ActiveCoR { get { return _activeCor; } set { _activeCor = value; } }
     public BuildingBase BuildingToInteractWith { get { return _buildingToInteractWith; } set { _buildingToInteractWith = value; } }
-    public Coroutine RunningBuildCoR { get { return _runningBuildCor; } set { _runningBuildCor = value; } }
     public EnemyScript EnemyToAttack { get { return _enemyToAttack; } set { _enemyToAttack = value; } }
-    public Coroutine RunningAttackCoR { get { return _runningAttackCor; } set { _runningAttackCor = value; } }
-    public Coroutine RunningInteractCoR { get { return _runningInteracCor; } set { _runningInteracCor = value; } }
-    public float CurrentInteractionDuration { get { return _currentInteractionDuration; } set { _currentInteractionDuration = value; } }
     public Slider AgentSlider { get { return _slider; } }
-    public bool IsKnight { get { return _isKnight; } set { _isKnight = value; } }
+    public AgentClass AgentClass { get { return _agentClass; } set { _agentClass = value; } }
+    public GameObject VillagerMesh { get { return _villagerMesh; } }
+    public GameObject KnightMesh { get { return _knightMesh; } }
 
     private void Start() 
     {
@@ -81,6 +83,8 @@ public class AgentScript : MonoBehaviour
     }
     private void Update()
     {
+        SetMesh();
+
         switch (_agentState)
         {
             case AgentState.Inactive:
@@ -143,7 +147,6 @@ public class AgentScript : MonoBehaviour
                 Debug.Log("Agent State ERROR");
                 break;
         }
-        //Rotate(_targetPos);
     }
 
     // Essentials
@@ -151,7 +154,7 @@ public class AgentScript : MonoBehaviour
     {
         _gameManager = GameManagerScript.GMInstance;
         _navMeshAgent = GetComponent<NavMeshAgent>();
-        _meshRenderer = GetComponent<MeshRenderer>();
+        _stateIndicatorMeshRenderer = GetComponentInChildren<MeshRenderer>();
     }
     private void SetUpAgent() 
     {
@@ -166,9 +169,13 @@ public class AgentScript : MonoBehaviour
         _buildingToInteractWith = null;
         _resourceToInteractWith = null;
         _enemyToAttack = null;
-        _currentInteractionDuration = 0;
         _slider = GetComponentInChildren<Slider>();
-        _isKnight = false;
+        _agentClass = AgentClass.Villager;
+        _villagerMesh.SetActive(true);
+        _knightMesh.SetActive(false);
+        _sliderCanvas = _slider.GetComponentInParent<Canvas>();
+        _sliderCanvas.enabled = false;
+
     }
     
     // Movement
@@ -241,9 +248,9 @@ public class AgentScript : MonoBehaviour
     // General
     public void ChangeColor(Color color)
     {
-        if (_meshRenderer.material.color != color)
+        if (_stateIndicatorMeshRenderer.material.color != color)
         {
-            _meshRenderer.material.color = color;
+            _stateIndicatorMeshRenderer.material.color = color;
         }
     }
     public void StopAgentCoroutine(Coroutine coroutine)
@@ -251,20 +258,54 @@ public class AgentScript : MonoBehaviour
         if (coroutine != null)
         {
             StopCoroutine(coroutine);
-            coroutine = null;
-            Debug.Log("call");
+            Debug.Log("Agent Call");
         }
     }
-    
+    public void SetMesh()
+    {
+        if (_agentClass == AgentClass.Villager)
+        {
+            _villagerMesh.SetActive(true);
+            _knightMesh.SetActive(false);
+        }
+        else
+        {
+            _villagerMesh.SetActive(false);
+            _knightMesh.SetActive(true);
+        }
+    }
+
+    // UI
+    public void EnableAgentUI(float time)
+    {
+        if (_agentState == AgentState.Gathering ||
+            _agentState == AgentState.Interacting ||
+            _agentState == AgentState.Attacking ||
+            _agentState == AgentState.Building)
+        {
+            _sliderCanvas.enabled = true;
+            FillBar(time);
+        }
+        else
+        {
+            _sliderCanvas.enabled = false;
+        }
+        
+    }
+    private IEnumerator FillBar(float time)
+    {
+        var startTime = Time.time;
+        while (Time.time < startTime + time)
+        {
+            _slider.value += Time.deltaTime;
+        }
+        yield break;
+    }
     // Actions
     private IEnumerator Attack()
     {
         yield return new WaitForSeconds(0);
     } // moveto enemy
-    private IEnumerator Build()
-    {
-        yield return new WaitForSeconds(0);
-    } //move to buildings
     private IEnumerator Death()
     {
         Debug.Log("call1");

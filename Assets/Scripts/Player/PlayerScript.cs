@@ -287,20 +287,38 @@ public class PlayerScript : MonoBehaviour
     // Selection General
     private void ToggleAgentSelection(AgentScript agent)
     {
-        if (agent.ActiveAgentState == AgentState.Gathering)
+        if (agent.ActiveCoR != null)
         {
-            agent.ResourceToInteractWith.StopGathering(agent);
-            agent.StopAgentCoroutine(agent.RunningGatherCoR);
+            agent.StopAgentCoroutine(agent.ActiveCoR);
+            Debug.Log("PlayerCall");
         }
-        else if (agent.ActiveAgentState == AgentState.Interacting)
+        switch (agent.ActiveAgentState)
         {
-            agent.BuildingToInteractWith.StopInteracting(agent);
-            agent.StopAgentCoroutine(agent.RunningBuildCoR);
-        }
-        else if (agent.ActiveAgentState == AgentState.Attacking)
-        {
-            //agent.EnemyToAttack.StopAttacking(agent);
-            agent.StopAgentCoroutine(agent.RunningAttackCoR);
+            case AgentState.Inactive:
+                break;
+            case AgentState.Idle:
+                break;
+            case AgentState.Moving:
+                break;
+            case AgentState.Attacking:
+                //agent.EnemyToAttack.StopAttacking(agent);
+                break;
+            case AgentState.Building:
+                break;
+            case AgentState.Gathering:
+                agent.ResourceToInteractWith.StopGathering(agent);
+                agent.ResourceToInteractWith = null;
+                break;
+            case AgentState.Interacting:
+                agent.BuildingToInteractWith.StopInteracting(agent);
+                agent.BuildingToInteractWith = null;
+                break;
+            case AgentState.Selected:
+                break;
+            case AgentState.Knight:
+                break;
+            default:
+                break;
         }
 
         if (agent.ActiveAgentState != AgentState.Selected)
@@ -446,12 +464,12 @@ public class PlayerScript : MonoBehaviour
             else if (_buildingInTrigger != null)
             {
                 agent.BuildingToInteractWith = _buildingInTrigger;
-                posToMove = _buildingInTrigger.transform.position;
+                posToMove = _buildingInTrigger.InteractPoint.transform.position;
             }
             else if (_enemyInTrigger != null)
             {
                 agent.EnemyToAttack = _enemyInTrigger;
-                posToMove = _enemyInTrigger.transform.position;
+                //posToMove = _enemyInTrigger.FightPoint.transform.position;
             }
             
             MoveAgent(agent, posToMove);

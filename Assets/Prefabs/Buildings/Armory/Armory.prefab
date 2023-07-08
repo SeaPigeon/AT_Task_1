@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1719266402027188481}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.272}
+  m_LocalPosition: {x: 0, y: -0, z: 0.34}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 9057099956997518621}
@@ -127,9 +127,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _buildingType: 0
-  _MAX_INTERACTIONS: 0
+  _MAX_INTERACTIONS: 3
   _currentInteractions: 0
-  _INTERACTION_COMPLETION_TIME: 0
+  _INTERACTION_COMPLETION_TIME: 10
   _currentCompletionTime: 0
   _agentsAssignedList: []
   _interactPoint: {fileID: 1719266402027188481}

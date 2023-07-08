@@ -80,23 +80,40 @@ public class ResourceBase : MonoBehaviour
     }
     public void StartGathering(AgentScript agent)
     {
-        if (_currentState == ResourceState.Gatherable && _currentWorkersCount < _MAX_WORKERS)
+        switch (agent.AgentClass)
         {
-            _agentsAssignedList.Add(agent);
-            _currentWorkersCount++;
-            _isGathering = true;
-            agent.RunningGatherCoR = StartCoroutine(Gather(agent));
+            case AgentClass.Villager:
+                if (_currentState == ResourceState.Gatherable &&
+            _currentWorkersCount < _MAX_WORKERS)
+                {
+                    _agentsAssignedList.Add(agent);
+                    _currentWorkersCount++;
+                    _isGathering = true;
+                    agent.ActiveCoR = null;
+                    agent.ActiveCoR = StartCoroutine(Gather(agent));
+                }
+                else
+                {
+                    agent.ActiveAgentState = AgentState.Inactive;
+                }
+                break;
+            case AgentClass.Knight:
+                agent.ActiveAgentState = AgentState.Inactive;
+                agent.ResourceToInteractWith = null;
+                break;
+            default:
+                Debug.Log("Class Type ERROR");
+                break;
         }
-        else
-        {
-            agent.ActiveAgentState = AgentState.Inactive;
-        }
+        
     }
     public void StopGathering(AgentScript agent)
     {
         _currentWorkersCount--;
         agent.ActiveAgentState = AgentState.Inactive; // if not from click SendBackToDeposit Later
+        agent.ResourceToInteractWith = null;
         _agentsAssignedList.Remove(agent);
+        
 
         if (_currentResQuantity <= 0 || _agentsAssignedList.Count <= 0)
         {
@@ -125,7 +142,7 @@ public class ResourceBase : MonoBehaviour
                     else if(_currentWorkersCount >= _MAX_WORKERS)
                     {
                         StopGathering(agent);
-                        Debug.Log(name + " Full Agent");
+                        Debug.Log(name + " Max Workers Reached");
                         yield break;
                     }
                     break;
@@ -141,7 +158,7 @@ public class ResourceBase : MonoBehaviour
                     else if (_currentWorkersCount >= _MAX_WORKERS)
                     {
                         StopGathering(agent);
-                        Debug.Log(name + " Full Agent");
+                        Debug.Log(name + " Max Workers Reached");
                         yield break;
                     }
                     break;
