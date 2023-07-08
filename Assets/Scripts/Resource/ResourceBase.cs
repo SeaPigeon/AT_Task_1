@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public enum ResourceType
 {
-    Cloth,
-    Iron,
+    Rock,
     Wood
 }
 public enum ResourceState
@@ -20,10 +19,12 @@ public class ResourceBase : MonoBehaviour
     [SerializeReference] private float _timeBetweenGather = 3;
     [SerializeReference] private float _timeToRegenOne = 3;
     [SerializeField] private int _STARTING_RES_QUANTITY = 5;
-    private MeshRenderer _fullMesh;
-    private MeshRenderer _halfMesh;
-    private MeshRenderer _emptyMesh;
     [SerializeField] private int _MAX_WORKERS = 3;
+    [SerializeField] GameObject _gatherPoint;
+
+    [Header("Meshes")]
+    [SerializeField] Mesh _defaultMesh;
+    [SerializeField] Mesh _depletedMesh;
 
     [Header("Debug")]
     [SerializeField] private ResourceType _resourceType;
@@ -32,7 +33,7 @@ public class ResourceBase : MonoBehaviour
     [SerializeField] private int _currentResQuantity;
     [SerializeField] private bool _isGathering;
     [SerializeField] List<AgentScript> _agentsAssignedList;
-    //private MeshRenderer _mesh;
+    private MeshFilter _meshFilter;
     
     private GameManagerScript _gameManager;
 
@@ -41,7 +42,7 @@ public class ResourceBase : MonoBehaviour
     public int ResourceProduced { get { return _resourceQuantityProduced; } set { _resourceQuantityProduced = value; } }
     public int MaxWorkers { get { return _MAX_WORKERS; } set { _MAX_WORKERS = value; } }
     public int CurrentWorkersCount { get { return _currentWorkersCount; } set { _currentWorkersCount = value; } }
-
+    public GameObject GatherPoint { get { return _gatherPoint; } }
     private void Start()
     {
         SetUpReferences();
@@ -52,13 +53,16 @@ public class ResourceBase : MonoBehaviour
         switch (_currentState)
         {
             case ResourceState.Gatherable:
+                SetMesh(_defaultMesh);
                 break;
             case ResourceState.Depleted:
+                SetMesh(_depletedMesh);
                 StartCoroutine(Respawn());
                 break;
             case ResourceState.Regenerating:
                 break;
             default:
+                Debug.Log("Resource State ERROR");
                 break;
         }
     }
@@ -66,11 +70,13 @@ public class ResourceBase : MonoBehaviour
     private void SetUpReferences()
     {
         _gameManager = GameManagerScript.GMInstance;
+        _meshFilter = GetComponent<MeshFilter>();
     }
     private void SetUpResource()
     {
         _gameManager.ResourcesInGame.Add(this);
         ResetResource();
+        
     }
     public void StartGathering(AgentScript agent)
     {
@@ -102,42 +108,90 @@ public class ResourceBase : MonoBehaviour
         // change resource mesh if needed,
         // send player back to deposit
 
-        Debug.Log("GatheringStarted");
+        Debug.Log(name + " GatheringStarted");
         agent.ActiveAgentState = AgentState.Gathering;
         while (_isGathering)
         {
+            switch (_resourceType)
+            {
+                case ResourceType.Rock:
+                    if (agent.CarriedRock >= agent.MaxRockCarriable || _currentResQuantity <= 0)
+                    {
+                        StopGathering(agent);
+                        _currentState = ResourceState.Depleted;
+                        Debug.Log(name + " Empty, Regenerating...");
+                        yield break;
+                    }
+                    else if(_currentWorkersCount >= _MAX_WORKERS)
+                    {
+                        StopGathering(agent);
+                        Debug.Log(name + " Full Agent");
+                        yield break;
+                    }
+                    break;
+
+                case ResourceType.Wood:
+                    if (agent.CarriedWood >= agent.MaxWoodCarriable || _currentResQuantity <= 0)
+                    {
+                        StopGathering(agent);
+                        _currentState = ResourceState.Depleted;
+                        Debug.Log(name + " Empty, Regenerating...");
+                        yield break;
+                    }
+                    else if (_currentWorkersCount >= _MAX_WORKERS)
+                    {
+                        StopGathering(agent);
+                        Debug.Log(name + " Full Agent");
+                        yield break;
+                    }
+                    break;
+
+                default:
+                    Debug.Log(name + " Resource Type ERROR");
+                    break;
+            }
+            
             yield return new WaitForSeconds(_timeBetweenGather);
 
-            if (agent.CarriedWood < agent.MaxWoodCarriable && _currentResQuantity > 0)
+            switch (_resourceType)
             {
-                ReduceResource();
-                agent.CarriedWood++;
-                Debug.Log("Gathering...");
-            }
-            else
-            {
-                StopGathering(agent);
+                case ResourceType.Rock:
+                    if (agent.CarriedRock < agent.MaxRockCarriable && _currentResQuantity > 0)
+                    {
+                        ReduceResource();
+                        agent.CarriedRock++;
+                        Debug.Log(name + " Gathering Rocks...");
+                    }
+                    break;
 
-                if (_currentResQuantity <= 0)
-                {
-                    _currentState = ResourceState.Regenerating;
-                    Debug.Log(name + " Empty, Regenerating...");
-                    yield break;
-                }
-                else
-                {
-                    Debug.Log("Full Agent");
-                    yield break;
-                }
+                case ResourceType.Wood:
+                    if (agent.CarriedWood < agent.MaxWoodCarriable && _currentResQuantity > 0)
+                    {
+                        ReduceResource();
+                        agent.CarriedWood++;
+                        Debug.Log(name + " Gathering Wood...");
+                    }
+                    break;
+
+                default:
+                    Debug.Log(name + " Resource Type ERROR");
+                    break;
             }
+            Debug.Log(_currentResQuantity);
         }
-        Debug.Log("GatheringFinished");
+        Debug.Log(name + " GatheringFinished");
+    }
+    private void SetMesh(Mesh mesh)
+    {
+        if (_meshFilter.sharedMesh != mesh)
+        {
+            _meshFilter.sharedMesh = mesh;
+        }
     }
 
     private void ResetResource()
     {
         _currentResQuantity = _STARTING_RES_QUANTITY;
-        //_mesh = _fullMesh;
         _currentState = ResourceState.Gatherable;
 
     }
@@ -147,17 +201,12 @@ public class ResourceBase : MonoBehaviour
         if (_currentResQuantity >= _STARTING_RES_QUANTITY)
         {
             _currentState = ResourceState.Gatherable;
-            Debug.Log("Resource Ready");
         }
     }
     private void ReduceResource()
     {
         _currentResQuantity -= _resourceQuantityProduced;
-        if (_currentResQuantity <= 0)
-        {
-            _currentState = ResourceState.Depleted;
-            Debug.Log("Resource Depleted");
-        }
+
     }
     private IEnumerator Respawn()
     {

@@ -441,7 +441,7 @@ public class PlayerScript : MonoBehaviour
             if (_resourceInTrigger != null)
             {
                 agent.ResourceToInteractWith = _resourceInTrigger;
-                posToMove = _resourceInTrigger.transform.position;
+                posToMove = _resourceInTrigger.GatherPoint.transform.position;
             }
             else if (_buildingInTrigger != null)
             {

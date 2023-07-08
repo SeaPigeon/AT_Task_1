@@ -116,11 +116,13 @@ MonoBehaviour:
   _rotationSpeed: 20
   _idleWalkRange: 5
   _timeBetweenWalks: 0.5
-  _MAX_CLOTH_CARRIED: 6
-  _MAX_IRON_CARRIED: 2
+  _MAX_ROCK_CARRIED: 10
   _MAX_WOOD_CARRIED: 10
+  _agentState: 0
+  _carriedRock: 0
   _carriedWood: 0
   _movingTowardsInteractable: 0
+  _isKnight: 0
 --- !u!195 &376116887068522125
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -135,7 +137,7 @@ NavMeshAgent:
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
-  m_StoppingDistance: 1.3
+  m_StoppingDistance: 0.2
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1

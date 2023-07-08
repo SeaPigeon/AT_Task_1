@@ -26,7 +26,6 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] bool _audioClipPlaying;
     [SerializeField] int _score;
     [SerializeField] bool _victory;
-    [SerializeField] int _totalCloth;
     [SerializeField] int _totalIron;
     [SerializeField] int _totalWood;
 
@@ -67,8 +66,7 @@ public class GameManagerScript : MonoBehaviour
     public List<ResourceBase> ResourcesInGame { get { return _resourcesInGame; } set { _resourcesInGame = value; } }
     public List<BuildingBase> BuildingsInGame { get { return _buildingsInGame; } set { _buildingsInGame = value; } }
 
-    public int TotalCloth { get { return _totalCloth; } set { _totalCloth = value; } }
-    public int TotalIron { get { return _totalIron; } set { _totalIron = value; } }
+    public int TotalRocks { get { return _totalIron; } set { _totalIron = value; } }
     public int TotalWood { get { return _totalWood; } set { _totalWood = value; } }
 
     // Methods
@@ -96,8 +94,7 @@ public class GameManagerScript : MonoBehaviour
         ActiveSceneName = SceneManager.GetActiveScene().name;
         SceneLoadedIndex = SceneManager.GetActiveScene().buildIndex;
         SetGameState();
-        TotalCloth = 0;
-        TotalIron = 0;
+        TotalRocks = 0;
         TotalWood = 0;
         _victory = false;
         OnGMSetUpComplete?.Invoke();

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public enum AgentState
 {
@@ -13,8 +14,7 @@ public enum AgentState
     Gathering,
     Interacting,
     Selected,
-    Tired,
-    Sleeping
+    Knight
 }
 public class AgentScript : MonoBehaviour
 {
@@ -23,21 +23,20 @@ public class AgentScript : MonoBehaviour
     [SerializeField] float _rotationSpeed;
     [SerializeField] int _idleWalkRange = 10;
     [SerializeField] float _timeBetweenWalks = 3;
-    [SerializeField] int _MAX_CLOTH_CARRIED = 6;
-    [SerializeField] int _MAX_IRON_CARRIED = 2;
+    [SerializeField] int _MAX_ROCK_CARRIED = 2;
     [SerializeField] int _MAX_WOOD_CARRIED = 4;
 
     [Header("Debug")]
     [SerializeField] private AgentState _agentState;
+    [SerializeField] private int _carriedRock;
     [SerializeField] private int _carriedWood;
     [SerializeField] private bool _movingTowardsInteractable;
     [SerializeField] private bool _isKnight;
+    [SerializeField] private Slider _slider;
     private Vector3 _targetPos;
     private Vector3 _targetRotation;
     private NavMeshAgent _navMeshAgent;
-    private int _carriedCloth;
-    private int _carriedIron;
-    private ResourceType _resType;
+    
     private GameManagerScript _gameManager;
     private Vector3 _patrolPoint;
     private bool _isPatrolling;
@@ -56,11 +55,9 @@ public class AgentScript : MonoBehaviour
     private float _currentInteractionDuration;
 
     // G&S
-    public int MaxClothCarriable { get { return _MAX_CLOTH_CARRIED; } set { _MAX_CLOTH_CARRIED = value; } }
-    public int MaxIronCarriable { get { return _MAX_IRON_CARRIED; } set { _MAX_IRON_CARRIED = value; } }
+    public int MaxRockCarriable { get { return _MAX_ROCK_CARRIED; } set { _MAX_ROCK_CARRIED = value; } }
     public int MaxWoodCarriable { get { return _MAX_WOOD_CARRIED; } set { _MAX_WOOD_CARRIED = value; } }
-    public int CarriedCloth { get { return _carriedCloth; } set { _carriedCloth = value; } }
-    public int CarriedIron { get { return _carriedIron; } set { _carriedIron = value; } }
+    public int CarriedRock { get { return _carriedRock; } set { _carriedRock = value; } }
     public int CarriedWood { get { return _carriedWood; } set { _carriedWood = value; } }
     public bool MovingTowardsInteractable { get { return _movingTowardsInteractable; } set { _movingTowardsInteractable = value; } }
     public Vector3 MoveTargetPosition { get { return _targetPos; } set { _targetPos = value; } }
@@ -74,6 +71,8 @@ public class AgentScript : MonoBehaviour
     public Coroutine RunningAttackCoR { get { return _runningAttackCor; } set { _runningAttackCor = value; } }
     public Coroutine RunningInteractCoR { get { return _runningInteracCor; } set { _runningInteracCor = value; } }
     public float CurrentInteractionDuration { get { return _currentInteractionDuration; } set { _currentInteractionDuration = value; } }
+    public Slider AgentSlider { get { return _slider; } }
+    public bool IsKnight { get { return _isKnight; } set { _isKnight = value; } }
 
     private void Start() 
     {
@@ -159,8 +158,7 @@ public class AgentScript : MonoBehaviour
         _targetPos = transform.position;
         _targetRotation = Vector3.zero;
         _agentState = AgentState.Inactive;
-        _carriedCloth = 0;
-        _carriedIron = 0;
+        _carriedRock = 0;
         _carriedWood = 0;
         _gameManager.AgentsInGame.Add(this);
         _hasMoveTarget = false;
@@ -169,9 +167,10 @@ public class AgentScript : MonoBehaviour
         _resourceToInteractWith = null;
         _enemyToAttack = null;
         _currentInteractionDuration = 0;
+        _slider = GetComponentInChildren<Slider>();
+        _isKnight = false;
     }
     
-
     // Movement
     private void Move(Vector3 targetPos)
     {
@@ -273,4 +272,7 @@ public class AgentScript : MonoBehaviour
         _gameManager.AgentsInGame.Remove(gameObject.GetComponent<AgentScript>());
         Destroy(gameObject);
     }
+
+
+    // AGGIUNGERE CHANGE MESH FUNCTION KNIGHT/FARMER
 }

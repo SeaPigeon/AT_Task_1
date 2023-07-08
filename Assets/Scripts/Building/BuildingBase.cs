@@ -4,8 +4,7 @@ using UnityEngine;
 public enum BuildingType
 {
     Armory,
-    Deposit,
-    House
+    Deposit
 }
 public class BuildingBase : MonoBehaviour
 {
@@ -15,8 +14,11 @@ public class BuildingBase : MonoBehaviour
     [SerializeField] private float _INTERACTION_COMPLETION_TIME;
     [SerializeField] private float _currentCompletionTime;
     [SerializeField] List<AgentScript> _agentsAssignedList;
-    
+    [SerializeField] GameObject _interactPoint;
     private GameManagerScript _gameManager;
+
+    public GameObject InteractPoint { get { return _interactPoint; } }
+
     private void Start()
     {
         SetUpReferences();
@@ -60,19 +62,23 @@ public class BuildingBase : MonoBehaviour
 
         Debug.Log("InteractionStarted");
 
-        while (agent.ActiveAgentState == AgentState.Interacting)
+        yield return new WaitForSeconds(_INTERACTION_COMPLETION_TIME);
+        switch (_buildingType)
         {
-            if (agent.CurrentInteractionDuration < _INTERACTION_COMPLETION_TIME)
-            {
-                agent.CurrentInteractionDuration += Time.deltaTime;
-                Debug.Log("Interacting...");
-            }
-            else
-            {
-                StopInteracting(agent);
-                Debug.Log("InteractionFinished");
-                yield break;
-            } 
+            case BuildingType.Armory:
+                agent.IsKnight = !agent.IsKnight;
+                break;
+            case BuildingType.Deposit:
+                _gameManager.TotalRocks += agent.CarriedRock;
+                _gameManager.TotalWood += agent.CarriedWood;
+                agent.CarriedWood = 0;
+                agent.CarriedRock = 0;
+                
+                break;
+            default:
+                break;
         }
+        StopInteracting(agent);
+        Debug.Log("InteractionFinished");
     }
 }
