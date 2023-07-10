@@ -261,8 +261,8 @@ MonoBehaviour:
   _moveSpeed: 10
   _runSpeed: 0
   _rotationSpeed: 140
-  _ascentSpeed: 10
-  _maxHeight: 30
+  _ascentSpeed: 12
+  _maxHeight: 40
   _minHeight: 3
   _minAngleV: 20
   _maxAngleV: 90
@@ -279,26 +279,10 @@ MonoBehaviour:
   _state: 0
   _gravityEnabled: 0
   _activeAgentsList: []
-  _objectsInTrigger: []
-  _gameCam: {fileID: 0}
-  _gameManager: {fileID: 0}
-  _sceneManager: {fileID: 0}
-  _inputManager: {fileID: 0}
-  _UILinker: {fileID: 0}
-  _audioManager: {fileID: 0}
-  _spawnPoint: {fileID: 0}
-  _playerSprite: {fileID: 0}
-  _gameCamBody: {fileID: 0}
-  _startingCamPos: {x: 0, y: 0, z: 0}
-  _startingCamRot: {x: 0, y: 0, z: 0, w: 0}
-  _xPoint1: 0
-  _yPoint1: 0
-  _xPoint2: 0
-  _yPoint2: 0
-  _bigX: 0
-  _smallX: 0
-  _bigY: 0
-  _smallY: 0
+  _agentsInTrigger: []
+  _resourceInTrigger: {fileID: 0}
+  _buildingInTrigger: {fileID: 0}
+  _enemyInTrigger: {fileID: 0}
 --- !u!143 &4052277301284392890
 CharacterController:
   m_ObjectHideFlags: 0
@@ -376,7 +360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 11
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalPosition.z

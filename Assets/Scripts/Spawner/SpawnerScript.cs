@@ -21,10 +21,7 @@ public class SpawnerScript : MonoBehaviour
     [SerializeField] private SpawnerState _state;
     [SerializeField] private GameManagerScript _gameManager;
     [SerializeField] private int _currentAgentsInScene;
-    private bool _isWaiting = false;
-    private float _waitTimer;
 
-    private Action CountCheckEvent;
     void Start()
     {
         SetReferences();

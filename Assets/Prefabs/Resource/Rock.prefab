@@ -117,7 +117,7 @@ MonoBehaviour:
   _gatherPoint: {fileID: 8719105972781085391}
   _defaultMesh: {fileID: -6898154746617452277, guid: b62e480eb4c41a746a49f49408e26dee, type: 3}
   _depletedMesh: {fileID: 4342281358398176031, guid: b62e480eb4c41a746a49f49408e26dee, type: 3}
-  _resourceType: 0
+  _resourceType: 1
   _currentState: 0
   _currentWorkersCount: 0
   _currentResQuantity: 0

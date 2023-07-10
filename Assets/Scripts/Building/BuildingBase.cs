@@ -17,6 +17,7 @@ public class BuildingBase : MonoBehaviour
     private GameManagerScript _gameManager;
 
     public GameObject InteractPoint { get { return _interactPoint; } }
+    public BuildingType BuildingType { get { return _buildingType; } }
 
     private void Start()
     {
@@ -45,17 +46,21 @@ public class BuildingBase : MonoBehaviour
                     agent.ActiveCoR = null;
                     agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
                     agent.ActiveCoR = StartCoroutine(Interact(agent));
+                    PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                    PlayerScript.PlayerInstance.HasAgentsInSelection();
                 }
                 else
                 {
                     agent.ActiveAgentState = AgentState.Inactive;
+                    PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                    PlayerScript.PlayerInstance.HasAgentsInSelection();
                 }
                 break;
             case BuildingType.Deposit:
                 if (agent.AgentClass != AgentClass.Knight)
                 {
                     if (_currentInteractions < _MAX_INTERACTIONS && 
-                        (agent.CarriedRock > 0 || agent.CarriedWood > 0))
+                        (agent.CarriedFood > 0 || agent.CarriedRocks > 0 || agent.CarriedWood > 0))
                     {
                         Debug.Log("call");
                         _agentsAssignedList.Add(agent);
@@ -64,15 +69,21 @@ public class BuildingBase : MonoBehaviour
                         agent.ActiveCoR = null;
                         agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
                         agent.ActiveCoR = StartCoroutine(Interact(agent));
+                        PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                        PlayerScript.PlayerInstance.HasAgentsInSelection();
                     }
                     else
                     {
                         agent.ActiveAgentState = AgentState.Inactive;
+                        PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                        PlayerScript.PlayerInstance.HasAgentsInSelection();
                     }
                 }
                 else
                 {
                     agent.ActiveAgentState = AgentState.Inactive;
+                    PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                    PlayerScript.PlayerInstance.HasAgentsInSelection();
                     agent.BuildingToInteractWith = null;
                 }
                 break;
@@ -88,6 +99,8 @@ public class BuildingBase : MonoBehaviour
         agent.ActiveAgentState = AgentState.Inactive; // if not from click SendBackToDeposit Later
         agent.BuildingToInteractWith = null;
         _agentsAssignedList.Remove(agent);
+        agent.StopCoroutine(agent.ActiveCoR);
+        agent.ActiveCoR = null;
     }
     public IEnumerator Interact(AgentScript agent)
     {
@@ -116,10 +129,12 @@ public class BuildingBase : MonoBehaviour
                 }
                 break;
             case BuildingType.Deposit:
-                _gameManager.TotalRocks += agent.CarriedRock;
+                _gameManager.TotalFood += agent.CarriedFood;
+                _gameManager.TotalRocks += agent.CarriedRocks;
                 _gameManager.TotalWood += agent.CarriedWood;
+                agent.CarriedFood = 0;
                 agent.CarriedWood = 0;
-                agent.CarriedRock = 0;
+                agent.CarriedRocks = 0;
                 // Send back to resource if resource is not empty
                 break;
             default:

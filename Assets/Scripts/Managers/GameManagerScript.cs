@@ -15,7 +15,7 @@ public enum GameState
 }
 public class GameManagerScript : MonoBehaviour
 {
-    [Header("Game Variables")]
+    [Header("System Variables")]
     private Scene _activeScene;
     [SerializeField] string _activeSceneName;
     [SerializeField] int _sceneLoadedIndex;
@@ -24,14 +24,18 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] CinemachineVirtualCamera _activeCamera;
     [SerializeField] AudioClip _currentAudioClipLoaded;
     [SerializeField] bool _audioClipPlaying;
+
+    [Header("Game Variables")]
     [SerializeField] int _score;
     [SerializeField] bool _victory;
-    [SerializeField] int _totalIron;
+    [SerializeField] int _totalFood;
+    [SerializeField] int _totalRocks;
     [SerializeField] int _totalWood;
 
     [SerializeField] List<AgentScript> _agentsInGame;
     [SerializeField] List<ResourceBase> _resourcesInGame;
     [SerializeField] List<BuildingBase> _buildingsInGame;
+    [SerializeField] List<EnemyScript> _enemiesInGame;
 
     public event Action OnGMSetUpComplete;
 
@@ -45,6 +49,7 @@ public class GameManagerScript : MonoBehaviour
     {
         SubscribeToEvents();
         SetUpGame();
+        StartCoroutine(Hunger()) ;
     }
 
     // Getters && Setters
@@ -65,8 +70,10 @@ public class GameManagerScript : MonoBehaviour
     public List<AgentScript> AgentsInGame { get { return _agentsInGame; } set { _agentsInGame = value; } }
     public List<ResourceBase> ResourcesInGame { get { return _resourcesInGame; } set { _resourcesInGame = value; } }
     public List<BuildingBase> BuildingsInGame { get { return _buildingsInGame; } set { _buildingsInGame = value; } }
+    public List<EnemyScript> EnemiesInGame { get { return _enemiesInGame; } set { _enemiesInGame = value; } }
 
-    public int TotalRocks { get { return _totalIron; } set { _totalIron = value; } }
+    public int TotalFood { get { return _totalFood; } set { _totalFood = value; } }
+    public int TotalRocks { get { return _totalRocks; } set { _totalRocks = value; } }
     public int TotalWood { get { return _totalWood; } set { _totalWood = value; } }
 
     // Methods
@@ -94,6 +101,7 @@ public class GameManagerScript : MonoBehaviour
         ActiveSceneName = SceneManager.GetActiveScene().name;
         SceneLoadedIndex = SceneManager.GetActiveScene().buildIndex;
         SetGameState();
+        TotalFood = 0;
         TotalRocks = 0;
         TotalWood = 0;
         _victory = false;
@@ -157,6 +165,33 @@ public class GameManagerScript : MonoBehaviour
     public void ResetScore()
     {
         Score = 0;
+    }
+    private IEnumerator Hunger()
+    {
+        Debug.Log("Hunger Started");
+        yield return new WaitForSeconds(15);
+        while (!Victory)
+        {
+            if (_agentsInGame.Count == 0)
+            {
+                SceneManagerScript.SMInstance.LoadEndGameScreen();
+            }
+            if (_totalFood >= 2 * _agentsInGame.Count)
+            {
+                Debug.Log("Feeding");
+                _totalFood -= 2 * _agentsInGame.Count;
+            }
+            else
+            {
+                int randomNumber = UnityEngine.Random.Range(0, 10);
+
+                List<AgentScript> copy = _agentsInGame;
+                _agentsInGame.Remove(_agentsInGame[randomNumber]);
+                Debug.Log("Bye Bye " + copy[randomNumber].name);
+                Destroy(copy[randomNumber]);
+                
+            }
+        }
     }
 }
 

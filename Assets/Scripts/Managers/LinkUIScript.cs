@@ -21,27 +21,43 @@ public class LinkUIScript : MonoBehaviour
     [SerializeField] Sprite _controlsTitleSprite;
     [SerializeField] string _controlsTitleString;
 
+    [Header("Move")]
     [SerializeField] Sprite _wButtonSprite;
     [SerializeField] Sprite _aButtonSprite;
     [SerializeField] Sprite _sButtonSprite;
     [SerializeField] Sprite _dButtonSprite;
-    [SerializeField] Sprite _stickSprite;
-    [SerializeField] Sprite _dpadSprite;
+    [SerializeField] Sprite _stickLSprite;
     [SerializeField] string _moveString;
 
+    [Header("RotateCam")]
+    [SerializeField] Sprite _upButtonSprite;
+    [SerializeField] Sprite _downButtonSprite;
+    [SerializeField] Sprite _leftButtonSprite;
+    [SerializeField] Sprite _rightButtonSprite;
+    [SerializeField] Sprite _stickRSprite;
+    [SerializeField] string _rotateCamString;
+
+    [Header("Interact")]
     [SerializeField] Sprite _spaceBarSprite;
     [SerializeField] Sprite _southButtonSprite;
-    [SerializeField] string _fireString;
+    [SerializeField] string _interactString;
 
+    [Header("Reset Cam")]
     [SerializeField] Sprite _shiftSprite;
     [SerializeField] Sprite _westButtonSprite;
-    [SerializeField] string _strafeString;
-
+    [SerializeField] string _resetCamString;
+    
+    [Header("Zoom Cam")]
     [SerializeField] Sprite _qButtonSprite;
     [SerializeField] Sprite _eButtonSprite;
     [SerializeField] Sprite _lsButtonSprite;
     [SerializeField] Sprite _rsButtonSprite;
-    [SerializeField] string _weaponSwapString;
+    [SerializeField] string _zoomString;
+
+    [Header("Reset Selection")]
+    [SerializeField] Sprite _eastButtonSprite;
+    [SerializeField] Sprite _ctrlButtonSprite;
+    [SerializeField] string _resetSelectionString;
 
     [Header("Variables Editor Canvas")]
     [SerializeField] Sprite _editorBGSprite;
@@ -58,6 +74,30 @@ public class LinkUIScript : MonoBehaviour
     [SerializeField] Sprite _gameBGSprite;
     [SerializeField] Sprite _healthSprite;
     [SerializeField] Sprite _scoreSprite;
+
+    // Score
+    [SerializeField] Sprite _scoreGameSprite;
+    [SerializeField] string _scoreString;
+
+    // Food
+    [SerializeField] Sprite _foodSprite;
+    [SerializeField] string _foodString;
+
+    // Rocks
+    [SerializeField] Sprite _rocksSprite;
+    [SerializeField] string _rocksString;
+
+    // Wood
+    [SerializeField] Sprite _woodSprite;
+    [SerializeField] string _woodString;
+
+    // Health
+    [SerializeField] Sprite _healthGameSprite;
+    [SerializeField] string _healthGameString;
+
+    // Emotions
+    [SerializeField] Sprite _emotioneSprite;
+    [SerializeField] string _emotionString;
 
     [Header("References")]
     [Header("References Debug Canvas")]
@@ -76,27 +116,43 @@ public class LinkUIScript : MonoBehaviour
     [SerializeField] Image _controlsTitleImage;
     [SerializeField] Text _controlsTitleText;
 
+    [Header("Move")]
     [SerializeField] Image _wButtonImage;
     [SerializeField] Image _aButtonImage;
     [SerializeField] Image _sButtonImage;
     [SerializeField] Image _dButtonImage;
-    [SerializeField] Image _stickImage;
-    [SerializeField] Image _dpadImage;
+    [SerializeField] Image _stickLImage;
     [SerializeField] Text _moveText;
 
+    [Header("Rotate Camera")]
+    [SerializeField] Image _upButtonImage;
+    [SerializeField] Image _downButtonImage;
+    [SerializeField] Image _leftButtonImage;
+    [SerializeField] Image _rightButtonImage;
+    [SerializeField] Image _stickRImage;
+    [SerializeField] Text _rotateCamText;
+
+    [Header("Interact")]
     [SerializeField] Image _spaceBarImage;
     [SerializeField] Image _southButtonImage;
-    [SerializeField] Text _fireText;
+    [SerializeField] Text _interactText;
 
+    [Header("Reset Camera")]
     [SerializeField] Image _shiftImage;
-    [SerializeField] Image _westImage;
-    [SerializeField] Text _strafeText;
+    [SerializeField] Image _westButtonImage;
+    [SerializeField] Text _resetCamText;
 
+    [Header("Zoom Camera")]
     [SerializeField] Image _qButtonImage;
     [SerializeField] Image _eButtonImage;
     [SerializeField] Image _lsButtonImage;
     [SerializeField] Image _rsButtonImage;
-    [SerializeField] Text _weaponSwapText;
+    [SerializeField] Text _zoomText;
+
+    [Header("Reset Selection")]
+    [SerializeField] Image _eastButtonImage;
+    [SerializeField] Image _ctrlButtonImage;
+    [SerializeField] Text _resetSelText;
 
     [Header("References Editor Canvas")]
     [SerializeField] Image _editorBGImage;
@@ -112,10 +168,30 @@ public class LinkUIScript : MonoBehaviour
 
     [Header("References Player Canvas")]
     [SerializeField] Image _gameBGImage;
-    [SerializeField] Image _healthImage;
-    [SerializeField] Text _healthText;
-    [SerializeField] Image _scoreImage;
-    [SerializeField] Text _scoreText;
+
+    // Score
+    [SerializeField] Image _scoreGameImage;
+    Text _scoreText;
+
+    // Food
+    [SerializeField] Image _foodImage;
+    Text _foodText;
+
+    // Rocks
+    [SerializeField] Image _rocksImage;
+    Text _rocksText;
+
+    // Wood
+    [SerializeField] Image _woodImage;
+    Text _woodText;
+
+    // Health
+    [SerializeField] Image _healthGameImage;
+    Text _healthGameText;
+
+    // Emotions
+    [SerializeField] Image _emotioneImage;
+    Text _emotionText;
 
     [Header("Debug")]
     [SerializeField] GameManagerScript _gameManager;
@@ -136,8 +212,12 @@ public class LinkUIScript : MonoBehaviour
     }
 
     // G&S
-    public Text HealthTextUI { get { return _healthText; } set { _healthText = value; } }
     public Text ScoreTextUI { get { return _scoreText; } set { _scoreText = value; } }
+    public Text FoodTextUI { get { return _foodText; } set { _foodText = value; } }
+    public Text RocksTextUI { get { return _rocksText; } set { _rocksText = value; } }
+    public Text WoodTextUI { get { return _woodText; } set { _woodText = value; } }
+    public Text EmotionTextUI { get { return _emotionText; } set { _emotionText = value; } }
+    public Text HealthTextUI { get { return _healthGameText; } set { _healthGameText = value; } }
     public Text ScoreEndScreenUI { get { return _endScoreBGText; } set { _endScoreBGText = value; } }
 
     // SetUpUI
@@ -159,27 +239,44 @@ public class LinkUIScript : MonoBehaviour
         _controlsTitleImage.sprite = _controlsTitleSprite;
         _controlsTitleText.text = _controlsTitleString;
 
+        // Move
         _wButtonImage.sprite = _wButtonSprite;
         _aButtonImage.sprite = _aButtonSprite;
         _sButtonImage.sprite = _sButtonSprite;
         _dButtonImage.sprite = _dButtonSprite;
-        _stickImage.sprite = _stickSprite;
-        _dpadImage.sprite = _dpadSprite;
+        _stickLImage.sprite = _stickLSprite;
         _moveText.text = _moveString;
 
+        // Rotate Cam
+        _upButtonImage.sprite = _upButtonSprite;
+        _downButtonImage.sprite = _downButtonSprite;
+        _leftButtonImage.sprite = _leftButtonSprite;
+        _rightButtonImage.sprite = _rightButtonSprite;
+        _stickRImage.sprite = _stickRSprite;
+        _rotateCamText.text = _rotateCamString;
+
+        // Interact
         _spaceBarImage.sprite = _spaceBarSprite;
         _southButtonImage.sprite = _southButtonSprite;
-        _fireText.text = _fireString;
+        _interactText.text = _interactString;
 
+        // Reset Cam
         _shiftImage.sprite = _shiftSprite;
-        _westImage.sprite = _westButtonSprite;
-        _strafeText.text = _strafeString;
+        _westButtonImage.sprite = _westButtonSprite;
+        _resetCamText.text = _resetCamString;
 
+        // Zoom
         _qButtonImage.sprite = _qButtonSprite;
         _eButtonImage.sprite = _eButtonSprite;
         _lsButtonImage.sprite = _lsButtonSprite;
         _rsButtonImage.sprite = _rsButtonSprite;
-        _weaponSwapText.text = _weaponSwapString;
+         _zoomText.text = _zoomString;
+
+        // Reset Selection
+        _eastButtonImage.sprite = _eastButtonSprite;
+        _ctrlButtonImage.sprite = _ctrlButtonSprite;
+        _resetSelText.text = _resetSelectionString;
+
     }
     private void SetUpEditorUI()
     {
@@ -198,8 +295,23 @@ public class LinkUIScript : MonoBehaviour
     {
         _gameBGImage.sprite = _gameBGSprite;
 
-        _healthImage.sprite = _healthSprite;
-        _scoreImage.sprite = _scoreSprite;
+        // Score
+        _scoreGameImage.sprite = _scoreGameSprite;
+
+        // Food
+        _foodImage.sprite = _foodSprite;
+
+        // Rocks
+        _rocksImage.sprite = _rocksSprite;
+
+        // Wood
+        _woodImage.sprite = _woodSprite;
+
+        // Health
+        _healthGameImage.sprite = _healthGameSprite;
+
+        // Emotions
+        _emotioneImage.sprite = _emotioneSprite;
     }
     private void SetUpUI()
     {

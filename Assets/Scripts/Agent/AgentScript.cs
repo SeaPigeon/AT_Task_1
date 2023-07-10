@@ -30,18 +30,24 @@ public class AgentScript : MonoBehaviour
     [SerializeField] float _rotationSpeed;
     [SerializeField] int _idleWalkRange = 10;
     [SerializeField] float _timeBetweenWalks = 3;
+    [SerializeField] int _MAX_FOOD_CARRIED = 5;
     [SerializeField] int _MAX_ROCK_CARRIED = 2;
     [SerializeField] int _MAX_WOOD_CARRIED = 4;
+    [SerializeField] int _currentHealth;
+    [SerializeField] int _MAX_HEALTH = 100;
 
     [Header("Debug")]
     [SerializeField] private GameObject _stateIndicator;
     [SerializeField] private AgentState _agentState;
     [SerializeField] private AgentClass _agentClass;
+    [SerializeField] private int _carriedFood;
     [SerializeField] private int _carriedRock;
     [SerializeField] private int _carriedWood;
     [SerializeField] private bool _movingTowardsInteractable;
-    [SerializeField] private Slider _slider;
-    [SerializeField] private Canvas _sliderCanvas;
+    [SerializeField] private Slider _interactionSlider;
+    [SerializeField] private Slider _healthSlider;
+    [SerializeField] private Canvas _agentCanvas;
+    private LinkUIScript _UILinker;
     private Vector3 _targetPos;
     private Vector3 _targetRotation;
     private NavMeshAgent _navMeshAgent;
@@ -57,11 +63,13 @@ public class AgentScript : MonoBehaviour
     private BuildingBase _buildingToInteractWith;
     private EnemyScript _enemyToAttack;
     private Coroutine _activeCor;
-
+    private bool _hasIdleStarted = false;
     // G&S
+    public int MaxFoodCarriable { get { return _MAX_FOOD_CARRIED; } set { _MAX_FOOD_CARRIED = value; } }
     public int MaxRockCarriable { get { return _MAX_ROCK_CARRIED; } set { _MAX_ROCK_CARRIED = value; } }
     public int MaxWoodCarriable { get { return _MAX_WOOD_CARRIED; } set { _MAX_WOOD_CARRIED = value; } }
-    public int CarriedRock { get { return _carriedRock; } set { _carriedRock = value; } }
+    public int CarriedFood { get { return _carriedFood; } set { _carriedFood = value; } }
+    public int CarriedRocks { get { return _carriedRock; } set { _carriedRock = value; } }
     public int CarriedWood { get { return _carriedWood; } set { _carriedWood = value; } }
     public bool MovingTowardsInteractable { get { return _movingTowardsInteractable; } set { _movingTowardsInteractable = value; } }
     public Vector3 MoveTargetPosition { get { return _targetPos; } set { _targetPos = value; } }
@@ -71,12 +79,12 @@ public class AgentScript : MonoBehaviour
     public AgentState ActiveAgentState { get { return _agentState; } set { _agentState = value; } }
     public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } }
     public Coroutine ActiveCoR { get { return _activeCor; } set { _activeCor = value; } }
-    public Slider AgentSlider { get { return _slider; } }
+    public Slider AgentSlider { get { return _interactionSlider; } }
     public AgentClass AgentClass { get { return _agentClass; } set { _agentClass = value; } }
     public GameObject VillagerMesh { get { return _villagerMesh; } }
     public GameObject KnightMesh { get { return _knightMesh; } }
     public bool HasMoveTarget { get { return _hasMoveTarget; } set { _hasMoveTarget = value; } }
-
+    public int CurrentHealth { get { return _currentHealth; }}
     private void Start() 
     {
         SetUpReferences();
@@ -90,7 +98,10 @@ public class AgentScript : MonoBehaviour
         {
             case AgentState.Inactive:
                 ChangeColor(Color.gray);
-                //StartIdle();
+                if (_activeCor == null)
+                {
+                    _activeCor = StartCoroutine(StartIdle());
+                }
                 break;
 
             case AgentState.Idle:
@@ -107,7 +118,6 @@ public class AgentScript : MonoBehaviour
                     StopAgent();
                     if (_movingTowardsInteractable)
                     {
-                        PlayerScript.PlayerInstance.ActiveAgentsList.Clear();
                         if (_resourceToInteractWith != null)
                         {
                             _resourceToInteractWith.StartGathering(this);
@@ -157,6 +167,8 @@ public class AgentScript : MonoBehaviour
         _gameManager = GameManagerScript.GMInstance;
         _navMeshAgent = GetComponent<NavMeshAgent>();
         _stateIndicatorMeshRenderer = GetComponentInChildren<MeshRenderer>();
+        _agentCanvas = _interactionSlider.GetComponentInParent<Canvas>();
+        _UILinker = UIManagerScript.UIMInstance.GetComponent<LinkUIScript>();
     }
     private void SetUpAgent() 
     {
@@ -171,13 +183,13 @@ public class AgentScript : MonoBehaviour
         _buildingToInteractWith = null;
         _resourceToInteractWith = null;
         _enemyToAttack = null;
-        _slider = GetComponentInChildren<Slider>();
         _agentClass = AgentClass.Villager;
         _villagerMesh.SetActive(true);
         _knightMesh.SetActive(false);
-        _sliderCanvas = _slider.GetComponentInParent<Canvas>();
-        _sliderCanvas.enabled = false;
-
+        _agentCanvas.gameObject.SetActive(true);
+        _interactionSlider.gameObject.SetActive(false);
+        _healthSlider.gameObject.SetActive(false);
+        _currentHealth = _MAX_HEALTH;
     }
     public void ResetAgent()
     {
@@ -187,6 +199,7 @@ public class AgentScript : MonoBehaviour
         ResourceToInteractWith = null;
         BuildingToInteractWith = null;
         EnemyToAttack = null;
+        StopAgentCoroutine(ActiveCoR);
         ActiveCoR = null;
         ActiveAgentState = AgentState.Inactive;
     }
@@ -204,51 +217,45 @@ public class AgentScript : MonoBehaviour
     public void StopAgent()
     {
         _agentState = AgentState.Selected;
-        StopCoroutine(StopIdle());
         _navMeshAgent.isStopped = true;
         _hasMoveTarget = false;
         _isPatrolling = false;
     }
 
     // Idle
-    private void StartIdle()
+    private IEnumerator StartIdle()
     {
-        if (!_isWaiting)
-        {
-            _isWaiting = true;
-            _waitTimer = _timeBetweenWalks;
-        }
-
-        _waitTimer -= Time.deltaTime;
-        if (_waitTimer <= 0f)
-        {
-            _isWaiting = false;
-            _agentState = AgentState.Idle;
-            Idle();
-        }
+        yield return new WaitForSeconds(_timeBetweenWalks);
+        _agentState = AgentState.Idle;
     }
     private void Idle()
     {
         if (!_isPatrolling)
         {
-            _isPatrolling = true;
             _patrolPoint = GenerateRandomPoint(transform.position, _idleWalkRange);
-            if (Vector3.Distance(transform.position, _patrolPoint) <= _navMeshAgent.stoppingDistance)
+            while (Vector3.Distance(_patrolPoint, transform.position) < 0.5f)
             {
                 _patrolPoint = GenerateRandomPoint(transform.position, _idleWalkRange);
             }
             _navMeshAgent.isStopped = false;
+            _isPatrolling = true;
             _navMeshAgent.SetDestination(_patrolPoint);
+        }
 
-            StartCoroutine(StopIdle());
+        if (!_navMeshAgent.pathPending &&
+            _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
+        {
+            StopIdle();
         }
     }
-    private IEnumerator StopIdle()
+    public void StopIdle()
     {
-        yield return new WaitUntil(() => Vector3.Distance(transform.position, _patrolPoint) <= _navMeshAgent.stoppingDistance);
         _navMeshAgent.isStopped = true;
-        _isPatrolling = false;
+        _patrolPoint = Vector3.zero;
         _agentState = AgentState.Inactive;
+        _isPatrolling = false;
+        StopAgentCoroutine(_activeCor);
+        _activeCor = null;
     }
     private Vector3 GenerateRandomPoint(Vector3 agentPos, int range)
     {
@@ -271,7 +278,6 @@ public class AgentScript : MonoBehaviour
         if (coroutine != null)
         {
             StopCoroutine(coroutine);
-            Debug.Log("Agent Call");
         }
     }
     public void SetMesh()
@@ -287,53 +293,54 @@ public class AgentScript : MonoBehaviour
             _knightMesh.SetActive(true);
         }
     }
+    private void Death()
+    {
+        //_gameManager.AgentsInGame.Remove(this);
+        Destroy(gameObject);
+    }
 
     // UI
     public void EnableAgentUI(float time)
     {
         if (_agentState == AgentState.Gathering ||
             _agentState == AgentState.Interacting ||
-            _agentState == AgentState.Attacking ||
             _agentState == AgentState.Building)
         {
-            _sliderCanvas.enabled = true;
+            _interactionSlider.gameObject.SetActive(true);
+            _healthSlider.gameObject.SetActive(false);
             StartCoroutine(FillBar(time));
+        }
+        else if (_agentState == AgentState.Attacking)
+        {
+            _interactionSlider.gameObject.SetActive(false);
+            _healthSlider.gameObject.SetActive(true);
         }
         else
         {
-            _sliderCanvas.enabled = false;
+            _interactionSlider.gameObject.SetActive(false);
+            _healthSlider.gameObject.SetActive(false);
         }
         
     }
     private IEnumerator FillBar(float maxTime)
     {
         var startTime = 0f;
-        _slider.value = 0f;
+        _interactionSlider.value = 0f;
         
         while (startTime < maxTime)
         {
             startTime += Time.deltaTime;
             float sliderValue = startTime / maxTime;
-            _slider.value = sliderValue;
+            _interactionSlider.value = sliderValue;
             yield return null;
         }
 
-        _slider.value = 1f;
-        _sliderCanvas.enabled = false;
-    }
-    // Actions
-    private IEnumerator Attack()
-    {
-        yield return new WaitForSeconds(0);
-    } // moveto enemy
-    private IEnumerator Death()
-    {
-        Debug.Log("call1");
-        yield return new WaitForSeconds(25);
-        _gameManager.AgentsInGame.Remove(gameObject.GetComponent<AgentScript>());
-        Destroy(gameObject);
+        _agentCanvas.enabled = false;
     }
 
-
-    // AGGIUNGERE CHANGE MESH FUNCTION KNIGHT/FARMER
+    // Combat
+    public void TakeDamage(int damage)
+    {
+        _currentHealth -= damage;
+    }
 }

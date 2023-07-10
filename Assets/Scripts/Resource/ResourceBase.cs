@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public enum ResourceType
 {
+    Corn,
     Rock,
     Wood
 }
@@ -34,7 +35,7 @@ public class ResourceBase : MonoBehaviour
     [SerializeField] private bool _isGathering;
     [SerializeField] List<AgentScript> _agentsAssignedList;
     private MeshFilter _meshFilter;
-    
+
     private GameManagerScript _gameManager;
 
     // G&S
@@ -76,36 +77,94 @@ public class ResourceBase : MonoBehaviour
     {
         _gameManager.ResourcesInGame.Add(this);
         ResetResource();
-        
+
     }
     public void StartGathering(AgentScript agent)
     {
         switch (agent.AgentClass)
         {
             case AgentClass.Villager:
-                if (_currentState == ResourceState.Gatherable &&
-                    _currentWorkersCount < _MAX_WORKERS)
+                switch (_resourceType)
                 {
-                    _agentsAssignedList.Add(agent);
-                    _currentWorkersCount++;
-                    _isGathering = true;
-                    agent.ActiveCoR = null;
-                    agent.ActiveCoR = StartCoroutine(Gather(agent));
-                }
-                else
-                {
-                    agent.ActiveAgentState = AgentState.Inactive;
+                    case ResourceType.Corn:
+                        if (_currentState == ResourceState.Gatherable &&
+                            _currentWorkersCount < _MAX_WORKERS &&
+                            agent.CarriedFood < agent.MaxFoodCarriable)
+                        {
+                            _agentsAssignedList.Add(agent);
+                            _currentWorkersCount++;
+                            _isGathering = true;
+                            agent.ActiveCoR = null;
+                            agent.ActiveCoR = StartCoroutine(Gather(agent));
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                        }
+                        else
+                        {
+                            agent.ActiveAgentState = AgentState.Inactive;
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                            Debug.Log(agent.name + " Food Limit Reached");
+                        }
+                        break;
+                    case ResourceType.Rock:
+                        if (_currentState == ResourceState.Gatherable &&
+                            _currentWorkersCount < _MAX_WORKERS &&
+                            agent.CarriedRocks < agent.MaxRockCarriable)
+                        {
+                            _agentsAssignedList.Add(agent);
+                            _currentWorkersCount++;
+                            _isGathering = true;
+                            agent.ActiveCoR = null;
+                            agent.ActiveCoR = StartCoroutine(Gather(agent));
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                        }
+                        else
+                        {
+                            agent.ActiveAgentState = AgentState.Inactive;
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                            Debug.Log(agent.name + " Rocks Limit Reached");
+                        }
+                        break;
+                    case ResourceType.Wood:
+                        if (_currentState == ResourceState.Gatherable &&
+                            _currentWorkersCount < _MAX_WORKERS &&
+                            agent.CarriedWood < agent.MaxWoodCarriable)
+                        {
+                            _agentsAssignedList.Add(agent);
+                            _currentWorkersCount++;
+                            _isGathering = true;
+                            agent.ActiveCoR = null;
+                            agent.ActiveCoR = StartCoroutine(Gather(agent));
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                        }
+                        else
+                        {
+                            agent.ActiveAgentState = AgentState.Inactive;
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                            Debug.Log(agent.name + " Wood Limit Reached");
+                        }
+                        break;
+                    default:
+                        Debug.Log("Resource Type ERROR");
+                        break;
                 }
                 break;
             case AgentClass.Knight:
                 agent.ActiveAgentState = AgentState.Inactive;
+                PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                PlayerScript.PlayerInstance.HasAgentsInSelection();
                 agent.ResourceToInteractWith = null;
                 break;
             default:
                 Debug.Log("Class Type ERROR");
                 break;
         }
-        
+        PlayerScript.PlayerInstance.HasAgentsInSelection();
     }
     public void StopGathering(AgentScript agent)
     {
@@ -113,90 +172,80 @@ public class ResourceBase : MonoBehaviour
         agent.ActiveAgentState = AgentState.Inactive; // if not from click SendBackToDeposit Later
         agent.ResourceToInteractWith = null;
         _agentsAssignedList.Remove(agent);
-        
-
+        agent.StopCoroutine(agent.ActiveCoR);
+        agent.ActiveCoR = null;
         if (_currentResQuantity <= 0 || _agentsAssignedList.Count <= 0)
         {
             _isGathering = false;
         }
     }
-    public IEnumerator Gather(AgentScript agent)
+    
+    private IEnumerator Gather(AgentScript agent)
     {
-        // change resource mesh if needed,
-        // send player back to deposit
-
         Debug.Log(name + " GatheringStarted");
         agent.ActiveAgentState = AgentState.Gathering;
+        
         while (_isGathering)
         {
-            switch (_resourceType)
-            {
-                case ResourceType.Rock:
-                    if (agent.CarriedRock >= agent.MaxRockCarriable || _currentResQuantity <= 0)
-                    {
-                        StopGathering(agent);
-                        _currentState = ResourceState.Depleted;
-                        Debug.Log(name + " Empty, Regenerating...");
-                        yield break;
-                    }
-                    else if(_currentWorkersCount >= _MAX_WORKERS)
-                    {
-                        StopGathering(agent);
-                        Debug.Log(name + " Max Workers Reached");
-                        yield break;
-                    }
-                    break;
+            agent.EnableAgentUI(_timeBetweenGather);
 
-                case ResourceType.Wood:
-                    if (agent.CarriedWood >= agent.MaxWoodCarriable || _currentResQuantity <= 0)
-                    {
-                        StopGathering(agent);
-                        _currentState = ResourceState.Depleted;
-                        Debug.Log(name + " Empty, Regenerating...");
-                        yield break;
-                    }
-                    else if (_currentWorkersCount >= _MAX_WORKERS)
-                    {
-                        StopGathering(agent);
-                        Debug.Log(name + " Max Workers Reached");
-                        yield break;
-                    }
-                    break;
-
-                default:
-                    Debug.Log(name + " Resource Type ERROR");
-                    break;
-            }
-            
             yield return new WaitForSeconds(_timeBetweenGather);
 
+            if (_currentResQuantity <= 0)
+            {
+                StopGathering(agent);
+                Debug.Log(name + " GatheringFinished: Resource Empty");
+                _currentState = ResourceState.Depleted;
+                yield break;
+            }
+
             switch (_resourceType)
             {
-                case ResourceType.Rock:
-                    if (agent.CarriedRock < agent.MaxRockCarriable && _currentResQuantity > 0)
+                case ResourceType.Corn:
+                    if (agent.CarriedFood >= agent.MaxFoodCarriable )
                     {
-                        ReduceResource();
-                        agent.CarriedRock++;
-                        Debug.Log(name + " Gathering Rocks...");
+                        StopGathering(agent);
+                        Debug.Log(name + "Gathering Finished: " + agent.name + " Limit Reached");
+                        yield break;
                     }
+
+                    agent.CarriedFood += IncreaseAgentResource();
+                    ReduceResource();
+                    Debug.Log(agent.name + " Food Carried: " + agent.CarriedFood);
+                    break;
+                
+                case ResourceType.Rock:
+                    if (agent.CarriedRocks >= agent.MaxRockCarriable)
+                    {
+                        StopGathering(agent);
+                        Debug.Log(name + "Gathering Finished: " + agent.name + " Limit Reached");
+                        yield break;
+                    }
+
+                    agent.CarriedRocks += IncreaseAgentResource();
+                    ReduceResource();
+                    Debug.Log(agent.name + " Rocks Carried: " + agent.CarriedRocks);
                     break;
 
-                case ResourceType.Wood:
-                    if (agent.CarriedWood < agent.MaxWoodCarriable && _currentResQuantity > 0)
+                case ResourceType.Wood: 
+                    if (agent.CarriedWood >= agent.MaxWoodCarriable)
                     {
-                        ReduceResource();
-                        agent.CarriedWood++;
-                        Debug.Log(name + " Gathering Wood...");
+                        StopGathering(agent);
+                        Debug.Log(name + "Gathering Finished: " + agent.name + " Limit Reached");
+                        yield break;
                     }
+
+                    agent.CarriedWood += IncreaseAgentResource();
+                    ReduceResource();
+                    Debug.Log(agent.name + " Wood Carried: " + agent.CarriedWood);
                     break;
 
                 default:
                     Debug.Log(name + " Resource Type ERROR");
                     break;
             }
-            Debug.Log(_currentResQuantity);
+            Debug.Log(name + " Gathering...");
         }
-        Debug.Log(name + " GatheringFinished");
     }
     private void SetMesh(Mesh mesh)
     {
@@ -212,17 +261,28 @@ public class ResourceBase : MonoBehaviour
         _currentState = ResourceState.Gatherable;
 
     }
-    private void IncreaseResource()
+    private int IncreaseAgentResource()
     {
-        _currentResQuantity += _resourceQuantityProduced;
-        if (_currentResQuantity >= _STARTING_RES_QUANTITY)
+        if (_currentResQuantity >= _resourceQuantityProduced)
         {
-            _currentState = ResourceState.Gatherable;
+            return _resourceQuantityProduced;
+        }
+        else
+        {
+            return _currentResQuantity;
         }
     }
     private void ReduceResource()
     {
-        _currentResQuantity -= _resourceQuantityProduced;
+        if (_currentResQuantity >= _resourceQuantityProduced)
+        {
+            _currentResQuantity -= _resourceQuantityProduced;
+        }
+        else
+        {
+            _currentResQuantity = 0;
+        }
+        
 
     }
     private IEnumerator Respawn()

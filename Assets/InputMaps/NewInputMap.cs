@@ -386,6 +386,17 @@ public class @NewInputMap : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""dbc58d16-0c1d-410b-b29a-e2c6921518a7"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ButtonEast"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""ae42d9bf-bf4c-4c81-824d-ea2ee4e10e5f"",
                     ""path"": ""<Gamepad>/buttonNorth"",
                     ""interactions"": """",

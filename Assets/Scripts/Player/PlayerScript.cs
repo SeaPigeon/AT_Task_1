@@ -70,6 +70,8 @@ public class PlayerScript : MonoBehaviour
     private float _bigY = 0;
     private float _smallY = 0;
 
+    private Coroutine _activeCor;
+
     // G&S
     public static PlayerScript PlayerInstance { get { return _playerInstance; } }
     public Vector2 MovementInput { get { return _movementInput; } set { _movementInput = value; } }
@@ -99,7 +101,7 @@ public class PlayerScript : MonoBehaviour
             ApplyGravity();
         }
         ResetSelection(_eastButtonInput);
-
+        //LinkUI();
     }
     private void LateUpdate()
     {
@@ -187,8 +189,8 @@ public class PlayerScript : MonoBehaviour
         _playerSprite.sprite = _baseCrosshairSprite;
         _startingCamPos = _gameCamBody.transform.localPosition;
         _startingCamRot = _gameCamBody.localRotation;
+        _activeCor = null;
 
-        LinkUI();
         if (SceneManager.GetActiveScene().buildIndex == 4 ||
             SceneManager.GetActiveScene().buildIndex == 5 ||
             SceneManager.GetActiveScene().buildIndex == 6)
@@ -229,7 +231,64 @@ public class PlayerScript : MonoBehaviour
     // PlayerUI
     private void LinkUI()
     {
-        //Debug.Log("LinkUI Function Call!");
+        if (_activeAgentsList.Count > 1)
+        {
+            _UILinker.FoodTextUI.text = SumFoodValues().ToString();
+            _UILinker.RocksTextUI.text = SumRocksValues().ToString();
+            _UILinker.WoodTextUI.text = SumWoodValues().ToString();
+            _UILinker.HealthTextUI.text = SumHealthValues(_activeAgentsList).ToString();
+
+        }
+        else if (_activeAgentsList.Count == 1)
+        {
+            _UILinker.FoodTextUI.text = _activeAgentsList[0].CarriedFood.ToString();
+            _UILinker.RocksTextUI.text = _activeAgentsList[0].CarriedRocks.ToString();
+            _UILinker.WoodTextUI.text = _activeAgentsList[0].CarriedWood.ToString();
+            _UILinker.HealthTextUI.text = _activeAgentsList[0].CurrentHealth.ToString();
+        }
+        else
+        {
+            _UILinker.FoodTextUI.text = _gameManager.TotalFood.ToString();
+            _UILinker.RocksTextUI.text = _gameManager.TotalRocks.ToString();
+            _UILinker.WoodTextUI.text = _gameManager.TotalWood.ToString();
+            _UILinker.HealthTextUI.text = SumHealthValues(_gameManager.AgentsInGame).ToString();
+        }
+    }
+    private int SumHealthValues(List<AgentScript> list)
+    {
+        int total = 0;
+        foreach (var agent in list)
+        {
+            total += agent.CurrentHealth;
+        }
+        return total;
+    }
+    private int SumFoodValues()
+    {
+        int total = 0;
+        foreach (var agent in _activeAgentsList)
+        {
+            total += agent.CarriedFood;
+        }
+        return total;
+    }
+    private int SumRocksValues()
+    {
+        int total = 0;
+        foreach (var agent in _activeAgentsList)
+        {
+            total += agent.CarriedRocks;
+        }
+        return total;
+    }
+    private int SumWoodValues()
+    {
+        int total = 0;
+        foreach (var agent in _activeAgentsList)
+        {
+            total += agent.CarriedWood;
+        }
+        return total;
     }
 
     // Player Movement
@@ -290,13 +349,14 @@ public class PlayerScript : MonoBehaviour
         if (agent.ActiveCoR != null)
         {
             agent.StopAgentCoroutine(agent.ActiveCoR);
-            Debug.Log("PlayerCall");
+            agent.ActiveCoR = null;
         }
         switch (agent.ActiveAgentState)
         {
             case AgentState.Inactive:
                 break;
             case AgentState.Idle:
+                agent.StopIdle();
                 break;
             case AgentState.Moving:
                 break;
@@ -355,6 +415,17 @@ public class PlayerScript : MonoBehaviour
             }
             _activeAgentsList.Clear();
             HasAgentsInSelection();
+        }
+    }
+    public void HasAgentsInSelection()
+    {
+        if (_activeAgentsList.Count >= 1)
+        {
+            _state = PlayerStates.HoldingSelection;
+        }
+        else
+        {
+            _state = PlayerStates.Rest;
         }
     }
 
@@ -416,18 +487,7 @@ public class PlayerScript : MonoBehaviour
         _playerSprite.sprite = _baseCrosshairSprite;
         HasAgentsInSelection();
     }
-    public void HasAgentsInSelection() 
-    {
-        if (_activeAgentsList.Count >= 1)
-        {
-            _state = PlayerStates.HoldingSelection;
-        }
-        else
-        {
-            _state = PlayerStates.Rest;
-        }
-    }
-    
+
     // Selection Move
     private void MoveAgent(AgentScript agent, Vector3 pos)
     {
@@ -464,23 +524,51 @@ public class PlayerScript : MonoBehaviour
             {
                 agent.ResourceToInteractWith = _resourceInTrigger;
                 posToMove = _resourceInTrigger.GatherPoint.transform.position;
+                //_UILinker.EmotionTextUI.text = "It's time to get sweaty!";
             }
             else if (_buildingInTrigger != null)
             {
                 agent.BuildingToInteractWith = _buildingInTrigger;
                 posToMove = _buildingInTrigger.InteractPoint.transform.position;
+                if (_buildingInTrigger.GetComponent<BuildingBase>().BuildingType == BuildingType.Armory)
+                {
+                    StopActiveCoR();
+                    _activeCor = StartCoroutine(EmotionTextHandler(3, "For the peace of the village", "..."));
+                }
+                else
+                {
+                    StopActiveCoR();
+                    _activeCor = StartCoroutine(EmotionTextHandler(3, "It's never enough", "..."));
+                }
             }
             else if (_enemyInTrigger != null)
             {
                 agent.EnemyToAttack = _enemyInTrigger;
-                //posToMove = _enemyInTrigger.FightPoint.transform.position;
+                posToMove = _enemyInTrigger.FightPoint.transform.position;
+                StopActiveCoR();
+                _activeCor = StartCoroutine(EmotionTextHandler(3, "TO THE DEATH!", "..."));
             }
             
             MoveAgent(agent, posToMove);
         }
         HasAgentsInSelection();
     }
+
+    private void StopActiveCoR()
+    {
+        if (_activeCor != null)
+        {
+            StopCoroutine(_activeCor);
+        }
+    }
     
+    private IEnumerator EmotionTextHandler(int time, string string1, string string2)
+    {
+        _UILinker.EmotionTextUI.text = string1;
+        yield return new WaitForSeconds(time);
+        _UILinker.EmotionTextUI.text = string2;
+    }
+
     // Inputs
     private void ButtonSouthBehaviour(bool input)
     {
@@ -556,7 +644,7 @@ public class PlayerScript : MonoBehaviour
     }
     private void OnRotate(InputAction.CallbackContext context)
     {
-        //s_rotateInput = context.ReadValue<Vector2>();
+        _rotateInput = context.ReadValue<Vector2>();
         //Debug.Log("RotateInput");
     }
     private void OnButtonSouth(InputAction.CallbackContext context) 
