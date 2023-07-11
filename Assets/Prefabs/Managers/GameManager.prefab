@@ -50,5 +50,18 @@ MonoBehaviour:
   _activeCamera: {fileID: 0}
   _currentAudioClipLoaded: {fileID: 0}
   _audioClipPlaying: 0
+  _timeBeforeHunger: 15
+  _timeBetweenHungerProcs: 15
+  _timeBeforeWaves: 30
+  _timeBetweenWaves: 30
   _score: 0
   _victory: 0
+  _totalFood: 0
+  _totalRocks: 0
+  _totalWood: 0
+  _agentsInGame: []
+  _resourcesInGame: []
+  _buildingsInGame: []
+  _enemiesInGame: []
+  _enemyPrefab: {fileID: 1922978110844486433, guid: 40788cad39f390743a9824c28b42bd40, type: 3}
+  _waveCount: 0

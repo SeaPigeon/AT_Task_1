@@ -10,6 +10,8 @@ public class BuildingBase : MonoBehaviour
 {
     [SerializeField] private BuildingType _buildingType;
     [SerializeField] private int _MAX_INTERACTIONS;
+    [SerializeField] private int _KNIGHT_COST_ROCKS = 2;
+    [SerializeField] private int _KNIGHT_COST_WOOD = 2;
     [SerializeField] private int _currentInteractions;
     [SerializeField] private float _INTERACTION_COMPLETION_TIME;
     [SerializeField] List<AgentScript> _agentsAssignedList;
@@ -38,22 +40,56 @@ public class BuildingBase : MonoBehaviour
         switch (_buildingType)
         {
             case BuildingType.Armory:
-                if (_currentInteractions < _MAX_INTERACTIONS)
+                switch (agent.AgentClass)
                 {
-                    _agentsAssignedList.Add(agent);
-                    _currentInteractions++;
-                    agent.ActiveAgentState = AgentState.Interacting;
-                    agent.ActiveCoR = null;
-                    agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
-                    agent.ActiveCoR = StartCoroutine(Interact(agent));
-                    PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
-                    PlayerScript.PlayerInstance.HasAgentsInSelection();
-                }
-                else
-                {
-                    agent.ActiveAgentState = AgentState.Inactive;
-                    PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
-                    PlayerScript.PlayerInstance.HasAgentsInSelection();
+                    case AgentClass.Villager:
+                        if (_currentInteractions < _MAX_INTERACTIONS &&
+                            _gameManager.TotalWood >= _KNIGHT_COST_WOOD &&
+                            _gameManager.TotalRocks >= _KNIGHT_COST_ROCKS)
+                        {
+                            _agentsAssignedList.Add(agent);
+                            _currentInteractions++;
+                            agent.ActiveAgentState = AgentState.Interacting;
+                            agent.ActiveCoR = null;
+                            //agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
+                            agent.ActiveCoR = StartCoroutine(Interact(agent));
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                        }
+                        else
+                        {
+                            Debug.Log("call");
+                            if (_gameManager.TotalWood < _KNIGHT_COST_WOOD ||
+                                _gameManager.TotalRocks < _KNIGHT_COST_ROCKS)
+                            {
+                                PlayerScript.PlayerInstance.ActiveCoR = StartCoroutine(PlayerScript.PlayerInstance.EmotionTextHandler(3, "2 Wood and 2 Rocks Needed to get an Armor", "..."));
+                            }
+                            agent.ActiveAgentState = AgentState.Inactive;
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                        }
+                        break;
+                    case AgentClass.Knight:
+                        if (_currentInteractions < _MAX_INTERACTIONS)
+                        {
+                            _agentsAssignedList.Add(agent);
+                            _currentInteractions++;
+                            agent.ActiveAgentState = AgentState.Interacting;
+                            agent.ActiveCoR = null;
+                            //agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
+                            agent.ActiveCoR = StartCoroutine(Interact(agent));
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                        }
+                        else
+                        {
+                            agent.ActiveAgentState = AgentState.Inactive;
+                            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
+                            PlayerScript.PlayerInstance.HasAgentsInSelection();
+                        }
+                        break;
+                    default:
+                        break;
                 }
                 break;
             case BuildingType.Deposit:
@@ -62,12 +98,11 @@ public class BuildingBase : MonoBehaviour
                     if (_currentInteractions < _MAX_INTERACTIONS && 
                         (agent.CarriedFood > 0 || agent.CarriedRocks > 0 || agent.CarriedWood > 0))
                     {
-                        Debug.Log("call");
                         _agentsAssignedList.Add(agent);
                         _currentInteractions++;
                         agent.ActiveAgentState = AgentState.Interacting;
                         agent.ActiveCoR = null;
-                        agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
+                        //agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
                         agent.ActiveCoR = StartCoroutine(Interact(agent));
                         PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
                         PlayerScript.PlayerInstance.HasAgentsInSelection();
@@ -95,20 +130,23 @@ public class BuildingBase : MonoBehaviour
     }
     public void StopInteracting(AgentScript agent)
     {
+        agent.DisableIteractSlider();
         _currentInteractions--;
-        agent.ActiveAgentState = AgentState.Inactive; // if not from click SendBackToDeposit Later
+        agent.ActiveAgentState = AgentState.Inactive; 
         agent.BuildingToInteractWith = null;
+        if (agent.ActiveCoR != null)
+        {
+            agent.StopCoroutine(agent.ActiveCoR);
+            agent.ActiveCoR = null;
+        }
         _agentsAssignedList.Remove(agent);
-        agent.StopCoroutine(agent.ActiveCoR);
-        agent.ActiveCoR = null;
+
     }
     public IEnumerator Interact(AgentScript agent)
     {
-        // change resource mesh if needed,
-        // send player back to resource
-
         Debug.Log("InteractionStarted");
-
+        agent.EnableInteractSlider();
+        StartCoroutine(agent.FillBar(_INTERACTION_COMPLETION_TIME));
         yield return new WaitForSeconds(_INTERACTION_COMPLETION_TIME);
         switch (_buildingType)
         {
@@ -116,7 +154,13 @@ public class BuildingBase : MonoBehaviour
                 switch (agent.AgentClass)
                 {
                     case AgentClass.Villager:
-                        agent.AgentClass = AgentClass.Knight;
+                        if (_gameManager.TotalWood >= _KNIGHT_COST_WOOD &&
+                            _gameManager.TotalRocks >= _KNIGHT_COST_ROCKS)
+                        {
+                            _gameManager.TotalRocks -= _KNIGHT_COST_ROCKS;
+                            _gameManager.TotalWood -= _KNIGHT_COST_WOOD;
+                            agent.AgentClass = AgentClass.Knight;
+                        }
                         break;
 
                     case AgentClass.Knight:

@@ -75,7 +75,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _debugBGSprite: {fileID: 21300000, guid: 6b4a052d0229a0647876fddd906252a0, type: 3}
   _debugTitleBGSprite: {fileID: 21300000, guid: de76ecd4c500b7e4ca4d5c06eaf87a21, type: 3}
-  _debugTitleString: Debug
+  _debugTitleString: AT Task 1 Squad AI
   _mainMenuBGSprite: {fileID: 21300000, guid: 6b4a052d0229a0647876fddd906252a0, type: 3}
   _mainMenuTitleBGSprite: {fileID: 21300000, guid: de76ecd4c500b7e4ca4d5c06eaf87a21, type: 3}
   _mainMenuTitleString: Raid AT the Village
@@ -119,17 +119,11 @@ MonoBehaviour:
   _healthSprite: {fileID: 21300000, guid: 6a8b0ecc87edadb45a5fdae54da584e9, type: 3}
   _scoreSprite: {fileID: 21300000, guid: 6a8b0ecc87edadb45a5fdae54da584e9, type: 3}
   _scoreGameSprite: {fileID: 21300000, guid: 7232f720dc233914f884f63c27e41309, type: 3}
-  _scoreString: 
   _foodSprite: {fileID: 21300000, guid: 8ad2f7a1409eb4b4db6521ba2e69378b, type: 3}
-  _foodString: 
   _rocksSprite: {fileID: 21300000, guid: 347861dd11cb73c4881efdf55bc1878c, type: 3}
-  _rocksString: 
   _woodSprite: {fileID: 21300000, guid: 2359653d5bc765f42b16b7cfde18c60e, type: 3}
-  _woodString: 
   _healthGameSprite: {fileID: 21300000, guid: a71e5169b3cd21447af0eb02b3009565, type: 3}
-  _healthGameString: 
   _emotioneSprite: {fileID: 21300000, guid: 2144d8b40ae41e64daee00ce83963302, type: 3}
-  _emotionString: 
   _debugBGImage: {fileID: 3567930694076700325}
   _debugTitleBGImage: {fileID: 3667863985449009310}
   _debugTitleText: {fileID: 3667863985264936514}

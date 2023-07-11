@@ -79,6 +79,7 @@ public class PlayerScript : MonoBehaviour
     public bool FireInput { get { return _southButtonInput; } set { _southButtonInput = value; } }
     public CinemachineVirtualCamera InGameCamera { get { return _gameCam; } }
     public List<AgentScript> ActiveAgentsList { get { return _activeAgentsList; } }
+    public Coroutine ActiveCoR { get { return _activeCor; } set { _activeCor = value; } }
 
     // Main
     private void Awake() 
@@ -101,7 +102,7 @@ public class PlayerScript : MonoBehaviour
             ApplyGravity();
         }
         ResetSelection(_eastButtonInput);
-        //LinkUI();
+        LinkUI();
     }
     private void LateUpdate()
     {
@@ -190,6 +191,8 @@ public class PlayerScript : MonoBehaviour
         _startingCamPos = _gameCamBody.transform.localPosition;
         _startingCamRot = _gameCamBody.localRotation;
         _activeCor = null;
+        _UILinker.ScoreTextUI.text = _gameManager.Score.ToString();
+        _UILinker.EmotionTextUI.text = "...";
 
         if (SceneManager.GetActiveScene().buildIndex == 4 ||
             SceneManager.GetActiveScene().buildIndex == 5 ||
@@ -346,11 +349,9 @@ public class PlayerScript : MonoBehaviour
     // Selection General
     private void ToggleAgentSelection(AgentScript agent)
     {
-        if (agent.ActiveCoR != null)
-        {
-            agent.StopAgentCoroutine(agent.ActiveCoR);
-            agent.ActiveCoR = null;
-        }
+        agent.StopAgentCoroutine(agent.ActiveCoR);
+        agent.ActiveCoR = null;
+
         switch (agent.ActiveAgentState)
         {
             case AgentState.Inactive:
@@ -360,18 +361,16 @@ public class PlayerScript : MonoBehaviour
                 break;
             case AgentState.Moving:
                 break;
-            case AgentState.Attacking:
+            case AgentState.Combat:
                 //agent.EnemyToAttack.StopAttacking(agent);
                 break;
             case AgentState.Building:
                 break;
             case AgentState.Gathering:
                 agent.ResourceToInteractWith.StopGathering(agent);
-                agent.ResourceToInteractWith = null;
                 break;
             case AgentState.Interacting:
                 agent.BuildingToInteractWith.StopInteracting(agent);
-                agent.BuildingToInteractWith = null;
                 break;
             case AgentState.Selected:
                 break;
@@ -380,11 +379,13 @@ public class PlayerScript : MonoBehaviour
             default:
                 break;
         }
-        agent.EnableAgentUI(0);
+        //agent.EnableAgentUI(0);
 
         if (agent.ActiveAgentState != AgentState.Selected)
         {
             AddAgentToSelection(agent);
+            StopActiveCoR();
+            _activeCor = StartCoroutine(EmotionTextHandler(3, "Something to doing", "..."));
         }
         else if (agent.ActiveAgentState == AgentState.Selected)
         {
@@ -487,6 +488,10 @@ public class PlayerScript : MonoBehaviour
         _playerSprite.sprite = _baseCrosshairSprite;
         HasAgentsInSelection();
     }
+    private void DrawSelectionArea() 
+    {
+
+    }
 
     // Selection Move
     private void MoveAgent(AgentScript agent, Vector3 pos)
@@ -524,21 +529,40 @@ public class PlayerScript : MonoBehaviour
             {
                 agent.ResourceToInteractWith = _resourceInTrigger;
                 posToMove = _resourceInTrigger.GatherPoint.transform.position;
-                //_UILinker.EmotionTextUI.text = "It's time to get sweaty!";
+                switch (_resourceInTrigger.ResourceType)
+                {
+                    case ResourceType.Corn:
+                        StopActiveCoR();
+                        _activeCor = StartCoroutine(EmotionTextHandler(3, "It's time to get sweaty in the field!", "..."));
+                        break;
+                    case ResourceType.Rock:
+                        StopActiveCoR();
+                        _activeCor = StartCoroutine(EmotionTextHandler(3, "Heigh-Hoooooo!", "..."));
+                        break;
+                    case ResourceType.Wood:
+                        StopActiveCoR();
+                        _activeCor = StartCoroutine(EmotionTextHandler(3, "Watch out for splinters!", "..."));
+                        break;
+                    default:
+                        break;
+                }
             }
             else if (_buildingInTrigger != null)
             {
                 agent.BuildingToInteractWith = _buildingInTrigger;
                 posToMove = _buildingInTrigger.InteractPoint.transform.position;
-                if (_buildingInTrigger.GetComponent<BuildingBase>().BuildingType == BuildingType.Armory)
+                switch (_buildingInTrigger.BuildingType)
                 {
-                    StopActiveCoR();
-                    _activeCor = StartCoroutine(EmotionTextHandler(3, "For the peace of the village", "..."));
-                }
-                else
-                {
-                    StopActiveCoR();
-                    _activeCor = StartCoroutine(EmotionTextHandler(3, "It's never enough", "..."));
+                    case BuildingType.Armory:
+                        StopActiveCoR();
+                        _activeCor = StartCoroutine(EmotionTextHandler(3, "For the peace of the village", "..."));
+                        break;
+                    case BuildingType.Deposit:
+                        StopActiveCoR();
+                        _activeCor = StartCoroutine(EmotionTextHandler(3, "It's never enough", "..."));
+                        break;
+                    default:
+                        break;
                 }
             }
             else if (_enemyInTrigger != null)
@@ -562,7 +586,7 @@ public class PlayerScript : MonoBehaviour
         }
     }
     
-    private IEnumerator EmotionTextHandler(int time, string string1, string string2)
+    public IEnumerator EmotionTextHandler(int time, string string1, string string2)
     {
         _UILinker.EmotionTextUI.text = string1;
         yield return new WaitForSeconds(time);

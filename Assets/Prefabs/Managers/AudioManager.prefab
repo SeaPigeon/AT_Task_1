@@ -45,7 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _menuMusic: {fileID: 8300000, guid: 07b940f062d3f95428c2f32c1fa1fc56, type: 3}
   _editorMusic: {fileID: 8300000, guid: dfcb1b69dfa46e5419c211c917ce922c, type: 3}
-  _gameMusic: {fileID: 0}
+  _gameMusic: {fileID: 8300000, guid: dfcb1b69dfa46e5419c211c917ce922c, type: 3}
   _doorSFX: {fileID: 8300000, guid: 9405eefda4541d44c81fc199e72cf747, type: 3}
   _victorySFX: {fileID: 8300000, guid: 59844f782cb32ae4eb57e401121f0bcc, type: 3}
   _defeatSFX: {fileID: 8300000, guid: ab6902f45d847574fb7bbc5e3c7c07a4, type: 3}

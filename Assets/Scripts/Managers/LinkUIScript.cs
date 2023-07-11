@@ -77,27 +77,27 @@ public class LinkUIScript : MonoBehaviour
 
     // Score
     [SerializeField] Sprite _scoreGameSprite;
-    [SerializeField] string _scoreString;
+    string _scoreString;
 
     // Food
     [SerializeField] Sprite _foodSprite;
-    [SerializeField] string _foodString;
+    string _foodString;
 
     // Rocks
     [SerializeField] Sprite _rocksSprite;
-    [SerializeField] string _rocksString;
+    string _rocksString;
 
     // Wood
     [SerializeField] Sprite _woodSprite;
-    [SerializeField] string _woodString;
+    string _woodString;
 
     // Health
     [SerializeField] Sprite _healthGameSprite;
-    [SerializeField] string _healthGameString;
+    string _healthGameString;
 
     // Emotions
     [SerializeField] Sprite _emotioneSprite;
-    [SerializeField] string _emotionString;
+    string _emotionString;
 
     [Header("References")]
     [Header("References Debug Canvas")]
@@ -171,27 +171,27 @@ public class LinkUIScript : MonoBehaviour
 
     // Score
     [SerializeField] Image _scoreGameImage;
-    Text _scoreText;
+    [SerializeField] Text _scoreText;
 
     // Food
     [SerializeField] Image _foodImage;
-    Text _foodText;
+    [SerializeField] Text _foodText;
 
     // Rocks
     [SerializeField] Image _rocksImage;
-    Text _rocksText;
+    [SerializeField] Text _rocksText;
 
     // Wood
     [SerializeField] Image _woodImage;
-    Text _woodText;
+    [SerializeField] Text _woodText;
 
     // Health
     [SerializeField] Image _healthGameImage;
-    Text _healthGameText;
+    [SerializeField] Text _healthGameText;
 
     // Emotions
     [SerializeField] Image _emotioneImage;
-    Text _emotionText;
+    [SerializeField] Text _emotionText;
 
     [Header("Debug")]
     [SerializeField] GameManagerScript _gameManager;
@@ -297,21 +297,27 @@ public class LinkUIScript : MonoBehaviour
 
         // Score
         _scoreGameImage.sprite = _scoreGameSprite;
+        //_scoreText.text = _scoreString;
 
         // Food
         _foodImage.sprite = _foodSprite;
+        //_foodText.text = _foodString;
 
         // Rocks
         _rocksImage.sprite = _rocksSprite;
+        //_rocksText.text = _rocksString;
 
         // Wood
         _woodImage.sprite = _woodSprite;
+        //_woodText.text = _woodString;
 
         // Health
         _healthGameImage.sprite = _healthGameSprite;
+        //_healthGameText.text = _healthGameString;
 
         // Emotions
         _emotioneImage.sprite = _emotioneSprite;
+        //_emotionText.text = _emotionString;
     }
     private void SetUpUI()
     {

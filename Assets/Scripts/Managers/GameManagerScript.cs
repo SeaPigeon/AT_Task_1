@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using Cinemachine;
+using Random = UnityEngine.Random;
 
 public enum GameState
 {
@@ -26,6 +27,10 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] bool _audioClipPlaying;
 
     [Header("Game Variables")]
+    [SerializeField] int _timeBeforeHunger = 15;
+    [SerializeField] int _timeBetweenHungerProcs = 15;
+    [SerializeField] int _timeBeforeWaves = 30;
+    [SerializeField] int _timeBetweenWaves = 30;
     [SerializeField] int _score;
     [SerializeField] bool _victory;
     [SerializeField] int _totalFood;
@@ -36,6 +41,10 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] List<ResourceBase> _resourcesInGame;
     [SerializeField] List<BuildingBase> _buildingsInGame;
     [SerializeField] List<EnemyScript> _enemiesInGame;
+
+    [Header("Debug")]
+    [SerializeField] GameObject _enemyPrefab;
+    [SerializeField] int _waveCount;
 
     public event Action OnGMSetUpComplete;
 
@@ -49,7 +58,6 @@ public class GameManagerScript : MonoBehaviour
     {
         SubscribeToEvents();
         SetUpGame();
-        StartCoroutine(Hunger()) ;
     }
 
     // Getters && Setters
@@ -101,11 +109,14 @@ public class GameManagerScript : MonoBehaviour
         ActiveSceneName = SceneManager.GetActiveScene().name;
         SceneLoadedIndex = SceneManager.GetActiveScene().buildIndex;
         SetGameState();
-        TotalFood = 0;
-        TotalRocks = 0;
-        TotalWood = 0;
+        _totalFood = 500000;
+        _totalRocks = 0;
+        _totalWood = 0;
+        _waveCount = 0;
         _victory = false;
         OnGMSetUpComplete?.Invoke();
+        StartCoroutine(Hunger());
+        //StartCoroutine(WaveSpawner());
         //Debug.Log("GameManager SetUp");
     }
     private void SetUpGame(Scene scene, LoadSceneMode mode)
@@ -168,30 +179,60 @@ public class GameManagerScript : MonoBehaviour
     }
     private IEnumerator Hunger()
     {
+        yield return new WaitForSeconds(_timeBeforeHunger);
         Debug.Log("Hunger Started");
-        yield return new WaitForSeconds(15);
-        while (!Victory)
+        while (!_victory)
         {
             if (_agentsInGame.Count == 0)
             {
+                _victory = true;
+                UIManagerScript.UIMInstance.GetComponent<LinkUIScript>().ScoreEndScreenUI.text = _score.ToString();
                 SceneManagerScript.SMInstance.LoadEndGameScreen();
+                yield break;
             }
-            if (_totalFood >= 2 * _agentsInGame.Count)
+
+            yield return new WaitForSeconds(_timeBetweenHungerProcs);
+
+            if (_totalFood >= _agentsInGame.Count)
             {
                 Debug.Log("Feeding");
-                _totalFood -= 2 * _agentsInGame.Count;
+                _totalFood -= _agentsInGame.Count;
             }
             else
             {
-                int randomNumber = UnityEngine.Random.Range(0, 10);
+                int randomNumber = Random.Range(0, _agentsInGame.Count);
+                AgentScript agentToRemove = _agentsInGame[randomNumber];
 
-                List<AgentScript> copy = _agentsInGame;
-                _agentsInGame.Remove(_agentsInGame[randomNumber]);
-                Debug.Log("Bye Bye " + copy[randomNumber].name);
-                Destroy(copy[randomNumber]);
-                
+                _agentsInGame[randomNumber].StopAgentCoroutine(_agentsInGame[randomNumber].ActiveCoR);
+                _agentsInGame.RemoveAt(randomNumber);
+                Debug.Log("Bye Bye " + agentToRemove.name);
+                Destroy(agentToRemove.gameObject);
+                _totalFood = 0;
             }
         }
     }
+    private IEnumerator WaveSpawner()
+    {
+        Vector3 spawnPosition = new Vector3(0, 0, 0);
+        Quaternion spawnRotation = Quaternion.identity;
+        _waveCount++;
+        yield return new WaitForSeconds(_timeBeforeWaves);
+        Debug.Log("Spawner Started");
+        while (!_victory)
+        {
+            for (int i = 0; i < _waveCount; i++)
+            {
+                Instantiate(_enemyPrefab, spawnPosition, spawnRotation);
+            }
+            UIManagerScript.UIMInstance.GetComponent<LinkUIScript>().EmotionTextUI.text = "Wave " + _waveCount.ToString() + " Incoming";
+            _waveCount++;
+            /*if (_waveCount > 5)
+            {
+                _timeBetweenWaves -= 2;
+            }*/
+            yield return new WaitForSeconds(_timeBetweenWaves);
+        }
+    }
+    
 }
 

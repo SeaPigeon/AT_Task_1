@@ -9,7 +9,7 @@ public enum AgentState
     Inactive,
     Idle,
     Moving,
-    Attacking,
+    Combat,
     Building,
     Gathering,
     Interacting,
@@ -35,9 +35,12 @@ public class AgentScript : MonoBehaviour
     [SerializeField] int _MAX_WOOD_CARRIED = 4;
     [SerializeField] int _currentHealth;
     [SerializeField] int _MAX_HEALTH = 100;
+    [SerializeField] int _damage;
+    [SerializeField] float _attackDelay;
 
     [Header("Debug")]
-    [SerializeField] private GameObject _stateIndicator;
+    [SerializeField] private GameObject _combatPoint;
+    [SerializeField] private Image _stateIndicator;
     [SerializeField] private AgentState _agentState;
     [SerializeField] private AgentClass _agentClass;
     [SerializeField] private int _carriedFood;
@@ -46,24 +49,20 @@ public class AgentScript : MonoBehaviour
     [SerializeField] private bool _movingTowardsInteractable;
     [SerializeField] private Slider _interactionSlider;
     [SerializeField] private Slider _healthSlider;
-    [SerializeField] private Canvas _agentCanvas;
-    private LinkUIScript _UILinker;
     private Vector3 _targetPos;
     private Vector3 _targetRotation;
     private NavMeshAgent _navMeshAgent;
     private GameManagerScript _gameManager;
     private Vector3 _patrolPoint;
     private bool _isPatrolling;
-    private float patrolTimer = 0f;
-    private bool _isWaiting = false;
     private float _waitTimer;
     private bool _hasMoveTarget;
-    private MeshRenderer _stateIndicatorMeshRenderer;
+
     private ResourceBase _resourceToInteractWith;
     private BuildingBase _buildingToInteractWith;
     private EnemyScript _enemyToAttack;
     private Coroutine _activeCor;
-    private bool _hasIdleStarted = false;
+    private bool _inCombat;
     // G&S
     public int MaxFoodCarriable { get { return _MAX_FOOD_CARRIED; } set { _MAX_FOOD_CARRIED = value; } }
     public int MaxRockCarriable { get { return _MAX_ROCK_CARRIED; } set { _MAX_ROCK_CARRIED = value; } }
@@ -85,6 +84,9 @@ public class AgentScript : MonoBehaviour
     public GameObject KnightMesh { get { return _knightMesh; } }
     public bool HasMoveTarget { get { return _hasMoveTarget; } set { _hasMoveTarget = value; } }
     public int CurrentHealth { get { return _currentHealth; }}
+    public GameObject AgentCombatPoint { get{ return _combatPoint; }}
+    public bool InCombat { get { return _inCombat; } set { _inCombat = value; } }
+
     private void Start() 
     {
         SetUpReferences();
@@ -136,7 +138,7 @@ public class AgentScript : MonoBehaviour
                 }
                 break;
 
-            case AgentState.Attacking:
+            case AgentState.Combat:
                 ChangeColor(Color.red);
                 break;
 
@@ -166,9 +168,6 @@ public class AgentScript : MonoBehaviour
     {
         _gameManager = GameManagerScript.GMInstance;
         _navMeshAgent = GetComponent<NavMeshAgent>();
-        _stateIndicatorMeshRenderer = GetComponentInChildren<MeshRenderer>();
-        _agentCanvas = _interactionSlider.GetComponentInParent<Canvas>();
-        _UILinker = UIManagerScript.UIMInstance.GetComponent<LinkUIScript>();
     }
     private void SetUpAgent() 
     {
@@ -186,10 +185,11 @@ public class AgentScript : MonoBehaviour
         _agentClass = AgentClass.Villager;
         _villagerMesh.SetActive(true);
         _knightMesh.SetActive(false);
-        _agentCanvas.gameObject.SetActive(true);
         _interactionSlider.gameObject.SetActive(false);
-        _healthSlider.gameObject.SetActive(false);
+        _healthSlider.gameObject.SetActive(true);
         _currentHealth = _MAX_HEALTH;
+        _healthSlider.maxValue = _MAX_HEALTH;
+        _healthSlider.value = _currentHealth;
     }
     public void ResetAgent()
     {
@@ -256,6 +256,7 @@ public class AgentScript : MonoBehaviour
         _isPatrolling = false;
         StopAgentCoroutine(_activeCor);
         _activeCor = null;
+        _inCombat = false;
     }
     private Vector3 GenerateRandomPoint(Vector3 agentPos, int range)
     {
@@ -268,9 +269,9 @@ public class AgentScript : MonoBehaviour
     // General
     public void ChangeColor(Color color)
     {
-        if (_stateIndicatorMeshRenderer.material.color != color)
+        if (_stateIndicator.color != color)
         {
-            _stateIndicatorMeshRenderer.material.color = color;
+            _stateIndicator.color = color;
         }
     }
     public void StopAgentCoroutine(Coroutine coroutine)
@@ -300,29 +301,28 @@ public class AgentScript : MonoBehaviour
     }
 
     // UI
-    public void EnableAgentUI(float time)
+    public void EnableHealthSlider()
     {
-        if (_agentState == AgentState.Gathering ||
-            _agentState == AgentState.Interacting ||
-            _agentState == AgentState.Building)
+        if (!_healthSlider.gameObject.activeSelf)
         {
-            _interactionSlider.gameObject.SetActive(true);
-            _healthSlider.gameObject.SetActive(false);
-            StartCoroutine(FillBar(time));
-        }
-        else if (_agentState == AgentState.Attacking)
-        {
-            _interactionSlider.gameObject.SetActive(false);
             _healthSlider.gameObject.SetActive(true);
         }
-        else
+    }
+    public void EnableInteractSlider()
+    {
+        if (!_interactionSlider.gameObject.activeSelf)
+        {
+            _interactionSlider.gameObject.SetActive(true);
+        }
+    }
+    public void DisableIteractSlider() 
+    {
+        if (_interactionSlider.gameObject.activeSelf)
         {
             _interactionSlider.gameObject.SetActive(false);
-            _healthSlider.gameObject.SetActive(false);
         }
-        
     }
-    private IEnumerator FillBar(float maxTime)
+    public IEnumerator FillBar(float maxTime)
     {
         var startTime = 0f;
         _interactionSlider.value = 0f;
@@ -335,12 +335,45 @@ public class AgentScript : MonoBehaviour
             yield return null;
         }
 
-        _agentCanvas.enabled = false;
+        //_agentCanvas.enabled = false;
     }
 
     // Combat
+    public IEnumerator Attack()
+    {
+        Debug.Log("Started");
+        while (_inCombat)
+        {
+            switch (_agentClass)
+            {
+                case AgentClass.Villager:
+                    break;
+                case AgentClass.Knight:
+                    _enemyToAttack.TakeDamage(_damage);
+                    yield return new WaitForSeconds(_attackDelay);
+                    break;
+                default:
+                    Debug.Log("AgentAttackERROR");
+                    break;
+            }
+        }
+        
+    }
     public void TakeDamage(int damage)
     {
         _currentHealth -= damage;
+        EnableHealthSlider();
+        _healthSlider.value = _currentHealth;
+        if (_currentHealth <= 0)
+        {
+            StopAgentCoroutine(_activeCor);
+            _enemyToAttack.StopEnemyCoroutine(_enemyToAttack.ActiveCoR);
+            _enemyToAttack.ActiveCoR = null;
+            _gameManager.AgentsInGame.Remove(this);
+            _enemyToAttack.CurrentEnemyState = EnemyState.Inactive;
+            _enemyToAttack.InCombat = false;
+            Debug.Log("What a cruel world");
+            Destroy(gameObject);
+        }
     }
 }

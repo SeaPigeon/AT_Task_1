@@ -6,7 +6,8 @@ using Cinemachine;
 
 public class BillboardScript : MonoBehaviour
 {
-    [SerializeField] RectTransform _UIElement;
+    private RectTransform _UIElement;
+
     void Start()
     {
         SetUpReferences();
