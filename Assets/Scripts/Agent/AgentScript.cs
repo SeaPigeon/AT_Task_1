@@ -50,19 +50,18 @@ public class AgentScript : MonoBehaviour
     [SerializeField] private Slider _interactionSlider;
     [SerializeField] private Slider _healthSlider;
     private Vector3 _targetPos;
-    private Vector3 _targetRotation;
     private NavMeshAgent _navMeshAgent;
     private GameManagerScript _gameManager;
     private Vector3 _patrolPoint;
     private bool _isPatrolling;
-    private float _waitTimer;
     private bool _hasMoveTarget;
 
     private ResourceBase _resourceToInteractWith;
     private BuildingBase _buildingToInteractWith;
     private EnemyScript _enemyToAttack;
     private Coroutine _activeCor;
-    private bool _inCombat;
+    [SerializeField] private bool _inCombat;
+    private LinkUIScript _UILinker;
     // G&S
     public int MaxFoodCarriable { get { return _MAX_FOOD_CARRIED; } set { _MAX_FOOD_CARRIED = value; } }
     public int MaxRockCarriable { get { return _MAX_ROCK_CARRIED; } set { _MAX_ROCK_CARRIED = value; } }
@@ -95,72 +94,7 @@ public class AgentScript : MonoBehaviour
     private void Update()
     {
         SetMesh();
-
-        switch (_agentState)
-        {
-            case AgentState.Inactive:
-                ChangeColor(Color.gray);
-                if (_activeCor == null)
-                {
-                    _activeCor = StartCoroutine(StartIdle());
-                }
-                break;
-
-            case AgentState.Idle:
-                ChangeColor(Color.black);
-                Idle();
-                break;
-
-            case AgentState.Moving:
-                ChangeColor(Color.yellow);
-                Move(_targetPos);
-                if (!_navMeshAgent.pathPending && 
-                    _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
-                {
-                    StopAgent();
-                    if (_movingTowardsInteractable)
-                    {
-                        if (_resourceToInteractWith != null)
-                        {
-                            _resourceToInteractWith.StartGathering(this);
-                        }
-                        else if (_buildingToInteractWith != null)
-                        {
-                            _buildingToInteractWith.StartInteract(this);
-                        }
-                        else if (_enemyToAttack != null)
-                        {
-                            //_enemyToAttack.StartToAttack(this);
-                        }
-                        
-                        _movingTowardsInteractable = false;
-                    }
-                }
-                break;
-
-            case AgentState.Combat:
-                ChangeColor(Color.red);
-                break;
-
-            case AgentState.Building:
-                ChangeColor(Color.blue);
-                break;
-            case AgentState.Interacting:
-                ChangeColor(Color.magenta);
-                break;
-            case AgentState.Gathering:
-                ChangeColor(Color.cyan);
-                break;
-
-            case AgentState.Selected:
-                ChangeColor(Color.green);
-                break;
-
-            default:
-                ChangeColor(Color.white);
-                Debug.Log("Agent State ERROR");
-                break;
-        }
+        Behaviour();
     }
 
     // Essentials
@@ -168,11 +102,11 @@ public class AgentScript : MonoBehaviour
     {
         _gameManager = GameManagerScript.GMInstance;
         _navMeshAgent = GetComponent<NavMeshAgent>();
+        _UILinker = UIManagerScript.UIMInstance.GetComponent<LinkUIScript>();
     }
     private void SetUpAgent() 
     {
         _targetPos = transform.position;
-        _targetRotation = Vector3.zero;
         _agentState = AgentState.Inactive;
         _carriedRock = 0;
         _carriedWood = 0;
@@ -182,6 +116,7 @@ public class AgentScript : MonoBehaviour
         _buildingToInteractWith = null;
         _resourceToInteractWith = null;
         _enemyToAttack = null;
+        _inCombat = false;
         _agentClass = AgentClass.Villager;
         _villagerMesh.SetActive(true);
         _knightMesh.SetActive(false);
@@ -339,14 +274,29 @@ public class AgentScript : MonoBehaviour
     }
 
     // Combat
+    private void StartAttack()
+    {
+        _navMeshAgent.isStopped = true;
+        StopIdle();
+        _enemyToAttack.CurrentEnemyState = EnemyState.Combat;
+        ActiveAgentState = AgentState.Combat;
+
+        if (PlayerScript.PlayerInstance.ActiveAgentsList.Contains(this))
+        {
+            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(this);
+            PlayerScript.PlayerInstance.HasAgentsInSelection();
+        }
+    }
     public IEnumerator Attack()
     {
-        Debug.Log("Started");
-        while (_inCombat)
+        _inCombat = true;
+        Debug.Log("AgentCombatStarted");
+        while (_enemyToAttack != null)
         {
             switch (_agentClass)
             {
                 case AgentClass.Villager:
+                    Debug.Log("I fear for my life!");
                     break;
                 case AgentClass.Knight:
                     _enemyToAttack.TakeDamage(_damage);
@@ -367,13 +317,93 @@ public class AgentScript : MonoBehaviour
         if (_currentHealth <= 0)
         {
             StopAgentCoroutine(_activeCor);
+            _activeCor = null;
             _enemyToAttack.StopEnemyCoroutine(_enemyToAttack.ActiveCoR);
             _enemyToAttack.ActiveCoR = null;
-            _gameManager.AgentsInGame.Remove(this);
+            _enemyToAttack.ClosestAgent = null;
             _enemyToAttack.CurrentEnemyState = EnemyState.Inactive;
-            _enemyToAttack.InCombat = false;
+            _enemyToAttack.HasTarget = false;
+            _enemyToAttack.NavMeshAgent.speed = _enemyToAttack.BaseMoveSpeed;
             Debug.Log("What a cruel world");
+            _gameManager.AgentsInGame.Remove(this);
             Destroy(gameObject);
+            _gameManager.Victory = true;
+            if (_gameManager.AgentsInGame.Count <= 0)
+            {
+                PlayerScript.PlayerInstance.ActiveAgentsList.Clear();
+                _UILinker.ScoreEndScreenUI.text = _gameManager.Score.ToString();
+                SceneManagerScript.SMInstance.LoadEndGameScreen();
+            }
+        }
+    }
+
+    private void Behaviour()
+    {
+        switch (_agentState)
+        {
+            case AgentState.Inactive:
+                ChangeColor(Color.green);
+                if (_activeCor == null)
+                {
+                    _activeCor = StartCoroutine(StartIdle());
+                }
+                break;
+
+            case AgentState.Idle:
+                ChangeColor(Color.green);
+                Idle();
+                break;
+
+            case AgentState.Moving:
+                ChangeColor(Color.yellow);
+                Move(_targetPos);
+                if (!_navMeshAgent.pathPending &&
+                    _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
+                {
+                    StopAgent();
+                    if (_movingTowardsInteractable)
+                    {
+                        if (_resourceToInteractWith != null)
+                        {
+                            _resourceToInteractWith.StartGathering(this);
+                        }
+                        else if (_buildingToInteractWith != null)
+                        {
+                            _buildingToInteractWith.StartInteract(this);
+                        }
+                        else if (_enemyToAttack != null)
+                        {
+                            //_enemyToAttack.StartAttack();
+                            _agentState = AgentState.Combat;
+                        }
+
+                        _movingTowardsInteractable = false;
+                    }
+                }
+                break;
+
+            case AgentState.Combat:
+                ChangeColor(Color.red);
+                if (!_inCombat)
+                {
+                    _activeCor = StartCoroutine(Attack());
+                }
+                break;
+            case AgentState.Interacting:
+                ChangeColor(Color.cyan);
+                break;
+            case AgentState.Gathering:
+                ChangeColor(Color.cyan);
+                break;
+
+            case AgentState.Selected:
+                ChangeColor(Color.yellow);
+                break;
+
+            default:
+                ChangeColor(Color.white);
+                Debug.Log("Agent State ERROR");
+                break;
         }
     }
 }

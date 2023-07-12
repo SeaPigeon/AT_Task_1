@@ -258,12 +258,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10819bebf9c942f4c9f2f222b2073682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeed: 10
+  _moveSpeed: 12
   _runSpeed: 0
-  _rotationSpeed: 140
-  _ascentSpeed: 12
-  _maxHeight: 40
-  _minHeight: 3
+  _rotationSpeed: 50
+  _ascentSpeed: 14
+  _maxHeight: 60
+  _minHeight: 4
   _minAngleV: 20
   _maxAngleV: 90
   _baseCrosshairSprite: {fileID: 21300000, guid: 4c0fd2cc764390747b7ca46dfe8d9414, type: 3}
@@ -360,7 +360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 25
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 3064175352358251462, guid: 927b48ed04e2f9647994d042dcb2e191, type: 3}
       propertyPath: m_LocalPosition.z

@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 0f8d5a3873ae07e43932aae7d90ce153, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -235,6 +235,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1825370468242957323, guid: 603d7cd666641844db21d196c6e5c925, type: 3}
+      propertyPath: m_BoundingSphereOverride.w
+      value: 2.9393042e+29
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 603d7cd666641844db21d196c6e5c925, type: 3}
 --- !u!1001 &782231807
@@ -291,6 +295,18 @@ PrefabInstance:
     - target: {fileID: 2030561490711681572, guid: 35546f59a28f55a4ab6c8aba46bde867, type: 3}
       propertyPath: m_Name
       value: GameManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 3978471062607677090, guid: 35546f59a28f55a4ab6c8aba46bde867, type: 3}
+      propertyPath: _timeBeforeHunger
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3978471062607677090, guid: 35546f59a28f55a4ab6c8aba46bde867, type: 3}
+      propertyPath: _MAX_NUMBER_OF_AGENTS
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3978471062607677090, guid: 35546f59a28f55a4ab6c8aba46bde867, type: 3}
+      propertyPath: _timeBetweenHungerProcs
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 35546f59a28f55a4ab6c8aba46bde867, type: 3}

@@ -35,15 +35,15 @@ public class EnemyScript : MonoBehaviour
     [SerializeField] AudioManagerScript _audioManager;
     [SerializeField] LinkUIScript _UILinker;
     [SerializeField] int _currentHealth;
-
+    [SerializeField] float _moveSpeedBase;
     [SerializeField] float _distanceToPlayer;
     [SerializeField] NavMeshAgent _navMeshAgent;
     [SerializeField] GameObject _mesh;
     [SerializeField] bool _hasTarget;
     [SerializeField] private Slider _healthSlider;
+    [SerializeField] private Slider _interactSlider;
     private AgentScript _closestAgent;
     private Coroutine _activeCor;
-    [SerializeField] private bool _isChasing;
     [SerializeField] private bool _inCombat;
 
     // G&S
@@ -51,6 +51,10 @@ public class EnemyScript : MonoBehaviour
     public GameObject FightPoint { get { return _fightPoint; } set { _fightPoint = value; } }
     public Coroutine ActiveCoR { get { return _activeCor; } set { _activeCor = value; } }
     public bool InCombat { get { return _inCombat; } set { _inCombat = value; } }
+    public bool HasTarget { get { return _hasTarget; } set { _hasTarget = value; } }
+    public AgentScript ClosestAgent { get { return _closestAgent; } set { _closestAgent = value; } }
+    public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } set { _navMeshAgent = value; } }
+    public float BaseMoveSpeed { get { return _moveSpeedBase; } }
 
     void Start()
     {
@@ -78,37 +82,37 @@ public class EnemyScript : MonoBehaviour
     {
         _gameManager.EnemiesInGame.Add(this);
         _currentHealth = _MAX_HEALTH;
-        _isChasing = false;
         _closestAgent = null;
         _inCombat = false;
+        _moveSpeedBase = _navMeshAgent.speed;
     }
 
     // Chase
     private void StartChase()
     {
         _currentState = EnemyState.Chase;
+        _inCombat = false;
     }
     private void Chase()
     {
         _closestAgent = FindClosestAgent();
-        if (!_isChasing)
-        {
-            _navMeshAgent.isStopped = false;
-            _isChasing = true;
-            _navMeshAgent.SetDestination(_closestAgent.transform.position);
-        }
+        _navMeshAgent.isStopped = false;
+        _navMeshAgent.SetDestination(_closestAgent.transform.position);
 
         if (!_navMeshAgent.pathPending &&
-            _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance)
+            _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance
+            )
         {
             StopChasing();
-            if (Vector3.Distance(transform.position, _closestAgent.transform.position) < 2)
+            if (!_inCombat && Vector3.Distance(transform.position, _closestAgent.transform.position) < 2)
             {
+
+                _navMeshAgent.isStopped = true;
                 _closestAgent.StopIdle();
                 _currentState = EnemyState.Combat;
+                _closestAgent.EnemyToAttack = this;
                 _closestAgent.ActiveAgentState = AgentState.Combat;
-                _inCombat = true;
-                _closestAgent.InCombat = true;
+
                 if (PlayerScript.PlayerInstance.ActiveAgentsList.Contains(_closestAgent))
                 {
                     PlayerScript.PlayerInstance.ActiveAgentsList.Remove(_closestAgent);
@@ -121,9 +125,9 @@ public class EnemyScript : MonoBehaviour
     {
         _navMeshAgent.isStopped = true;
         _currentState = EnemyState.Inactive;
-        _isChasing = false;
         StopEnemyCoroutine(_activeCor);
         _activeCor = null;
+        _navMeshAgent.speed = _closestAgent.NavMeshAgent.speed;
     }
     private AgentScript FindClosestAgent()
     {
@@ -144,33 +148,24 @@ public class EnemyScript : MonoBehaviour
     }
     
     // Combat
-    private void EngageCombat()
-    {
-        if (Vector3.Distance(transform.position, _closestAgent.AgentCombatPoint.transform.position) < _navMeshAgent.stoppingDistance)
-        {
-            _navMeshAgent.isStopped = false;
-            _navMeshAgent.SetDestination(_closestAgent.AgentCombatPoint.transform.position);
-        }
-        if (!_navMeshAgent.pathPending &&
-            _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance &&
-            !_inCombat)
-        {
-            Debug.Log("call");
-            StopEnemyCoroutine(_activeCor);
-            _activeCor = null;
-            _activeCor = StartCoroutine(Attack());
-
-            _closestAgent.EnemyToAttack = this;
-            _closestAgent.StopAgentCoroutine(_closestAgent.ActiveCoR);
-            _closestAgent.ActiveCoR = null;
-            _closestAgent.ActiveCoR = StartCoroutine(_closestAgent.Attack());
-        }
-    }
     private IEnumerator Attack()
     {
-        Debug.Log("Started");
-        while (_inCombat)
+        _inCombat = true;
+        _hasTarget = true;
+        Debug.Log("Enemy Attaks Started");
+        _navMeshAgent.speed = _closestAgent.NavMeshAgent.speed;
+        while (_hasTarget)
         {
+            if (Vector3.Distance(transform.position, _closestAgent.transform.position) > 2 )
+            {
+                _navMeshAgent.isStopped = false;
+                _navMeshAgent.SetDestination(_closestAgent.transform.position);
+            }
+            else
+            {
+                _navMeshAgent.isStopped = true;
+            }
+           
             _closestAgent.TakeDamage(_damage);
             yield return new WaitForSeconds(_attackDelay);
         }
@@ -208,6 +203,8 @@ public class EnemyScript : MonoBehaviour
     private Vector3 GenerateRandomPoint(Vector3 enemyPos, int range)
     {
         Vector3 randomPoint = enemyPos + Random.insideUnitSphere * range;
+        Vector3 randomPointH = new Vector3(randomPoint.x, randomPoint.y + 1, randomPoint.z);
+        randomPoint = randomPointH;
         NavMeshHit hit;
         NavMesh.SamplePosition(randomPoint, out hit, range, NavMesh.AllAreas);
         return hit.position;
@@ -222,23 +219,29 @@ public class EnemyScript : MonoBehaviour
     // Behaviour
     private void Behaviour()
     {
-        switch (_currentState)
+        if (_gameManager.AgentsInGame.Count > 0)
         {
-            case EnemyState.Inactive:
-                StartChase();
-                break;
-            case EnemyState.Chase:
-                Chase();
-                break;
-            case EnemyState.Combat:
-                EngageCombat();
-                break;
-            case EnemyState.Dead:
-                break;
-            default:
-                break;
-        }
+            switch (_currentState)
+            {
+                case EnemyState.Inactive:
+                    StartChase();
+                    break;
+                case EnemyState.Chase:
+                    Chase();
+                    break;
+                case EnemyState.Combat:
+                    if (!_inCombat)
+                    {
+                        _activeCor = StartCoroutine(Attack());
+                    }
 
+                    break;
+                case EnemyState.Dead:
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     // General

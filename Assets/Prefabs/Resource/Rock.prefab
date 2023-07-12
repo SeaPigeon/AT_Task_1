@@ -109,11 +109,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4214b816098c0043911537b395d3924, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _resourceQuantityProduced: 1
-  _timeBetweenGather: 3
-  _timeToRegenOne: 3
-  _STARTING_RES_QUANTITY: 2
-  _MAX_WORKERS: 3
+  _resourceQuantityProduced: 3
+  _timeBetweenGather: 10
+  _timeToRegenOne: 18
+  _STARTING_RES_QUANTITY: 9
+  _MAX_WORKERS: 2
   _gatherPoint: {fileID: 8719105972781085391}
   _defaultMesh: {fileID: -6898154746617452277, guid: b62e480eb4c41a746a49f49408e26dee, type: 3}
   _depletedMesh: {fileID: 4342281358398176031, guid: b62e480eb4c41a746a49f49408e26dee, type: 3}

@@ -26,7 +26,7 @@ public class SpawnerScript : MonoBehaviour
     {
         SetReferences();
         SetUpSpawner();
-        StartCoroutine(SpawnAgent());
+        //StartCoroutine(SpawnAgent());
     }
     private void Update()
     {
@@ -56,6 +56,7 @@ public class SpawnerScript : MonoBehaviour
     {
         _currentAgentsInScene = _gameManager.AgentsInGame.Count;
         _state = SpawnerState.Spawning;
+        _gameManager.SpawnersInGame.Add(this);
     }
 
     private IEnumerator SpawnAgent()

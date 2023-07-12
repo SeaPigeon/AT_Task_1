@@ -99,6 +99,10 @@ public class LinkUIScript : MonoBehaviour
     [SerializeField] Sprite _emotioneSprite;
     string _emotionString;
 
+    // Agents in Game
+    [SerializeField] Sprite _agentCountSprite;
+    [SerializeField] string _agentCountString;
+
     [Header("References")]
     [Header("References Debug Canvas")]
     [Header("--------------------------------------")]
@@ -193,6 +197,10 @@ public class LinkUIScript : MonoBehaviour
     [SerializeField] Image _emotioneImage;
     [SerializeField] Text _emotionText;
 
+    // Agents in Game
+    [SerializeField] Image _AgentCountImage;
+    [SerializeField] Text _agentCountText;
+
     [Header("Debug")]
     [SerializeField] GameManagerScript _gameManager;
 
@@ -212,6 +220,7 @@ public class LinkUIScript : MonoBehaviour
     }
 
     // G&S
+    public Text AgentCountTextUI { get { return _agentCountText; } set { _agentCountText = value; } }
     public Text ScoreTextUI { get { return _scoreText; } set { _scoreText = value; } }
     public Text FoodTextUI { get { return _foodText; } set { _foodText = value; } }
     public Text RocksTextUI { get { return _rocksText; } set { _rocksText = value; } }
@@ -318,6 +327,8 @@ public class LinkUIScript : MonoBehaviour
         // Emotions
         _emotioneImage.sprite = _emotioneSprite;
         //_emotionText.text = _emotionString;
+
+        _AgentCountImage.sprite = _agentCountSprite;
     }
     private void SetUpUI()
     {

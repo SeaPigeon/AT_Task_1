@@ -140,9 +140,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _buildingType: 1
-  _MAX_INTERACTIONS: 10
+  _MAX_INTERACTIONS: 2
+  _KNIGHT_COST_ROCKS: 15
+  _KNIGHT_COST_WOOD: 15
   _currentInteractions: 0
-  _INTERACTION_COMPLETION_TIME: 3
-  _currentCompletionTime: 0
+  _INTERACTION_COMPLETION_TIME: 7
   _agentsAssignedList: []
   _interactPoint: {fileID: 5028948656552224678}

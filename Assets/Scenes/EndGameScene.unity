@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 1fd11632d02eab44385a45ff0bb19133, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -234,6 +234,22 @@ PrefabInstance:
     - target: {fileID: 1825370468242957322, guid: 603d7cd666641844db21d196c6e5c925, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1825370468242957323, guid: 603d7cd666641844db21d196c6e5c925, type: 3}
+      propertyPath: m_BoundingSphereOverride.w
+      value: 7.44087e+28
+      objectReference: {fileID: 0}
+    - target: {fileID: 1825370468242957323, guid: 603d7cd666641844db21d196c6e5c925, type: 3}
+      propertyPath: m_BoundingSphereOverride.x
+      value: 6.8608197e+22
+      objectReference: {fileID: 0}
+    - target: {fileID: 1825370468242957323, guid: 603d7cd666641844db21d196c6e5c925, type: 3}
+      propertyPath: m_BoundingSphereOverride.y
+      value: 7.311961e+28
+      objectReference: {fileID: 0}
+    - target: {fileID: 1825370468242957323, guid: 603d7cd666641844db21d196c6e5c925, type: 3}
+      propertyPath: m_BoundingSphereOverride.z
+      value: 2.9590057e+21
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 603d7cd666641844db21d196c6e5c925, type: 3}

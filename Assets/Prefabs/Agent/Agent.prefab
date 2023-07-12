@@ -86,6 +86,7 @@ MonoBehaviour:
   _movingTowardsInteractable: 0
   _interactionSlider: {fileID: 5473090552674139136}
   _healthSlider: {fileID: 2449736042696795912}
+  _inCombat: 0
 --- !u!195 &376116887068522125
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -283,6 +284,22 @@ PrefabInstance:
     - target: {fileID: 1396174066280145172, guid: 4d150ecec6941f34badd1dc4dac67422, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3262006768960553806, guid: 4d150ecec6941f34badd1dc4dac67422, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3262006768960553806, guid: 4d150ecec6941f34badd1dc4dac67422, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3262006768960553806, guid: 4d150ecec6941f34badd1dc4dac67422, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3262006768960553806, guid: 4d150ecec6941f34badd1dc4dac67422, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 2.16
       objectReference: {fileID: 0}
     - target: {fileID: 4984400415599637108, guid: 4d150ecec6941f34badd1dc4dac67422, type: 3}
       propertyPath: m_PresetInfoIsWorld

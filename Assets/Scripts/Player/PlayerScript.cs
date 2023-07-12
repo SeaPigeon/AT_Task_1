@@ -1,4 +1,4 @@
-using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -211,6 +211,12 @@ public class PlayerScript : MonoBehaviour
     {
         _gameManager.ResetScore();
         _gameManager.Victory = false;
+        _activeAgentsList.Clear();
+        
+        /*_gameManager.TotalFood = 4;
+        _gameManager.TotalRocks = 2;
+        _gameManager.TotalWood = 2;
+        _gameManager.WaveCount = 0;*/
     }
     public void TogglePlayerMesh(bool state)
     {
@@ -234,6 +240,7 @@ public class PlayerScript : MonoBehaviour
     // PlayerUI
     private void LinkUI()
     {
+        _UILinker.AgentCountTextUI.text = _gameManager.AgentsInGame.Count.ToString();
         if (_activeAgentsList.Count > 1)
         {
             _UILinker.FoodTextUI.text = SumFoodValues().ToString();
@@ -244,10 +251,14 @@ public class PlayerScript : MonoBehaviour
         }
         else if (_activeAgentsList.Count == 1)
         {
-            _UILinker.FoodTextUI.text = _activeAgentsList[0].CarriedFood.ToString();
-            _UILinker.RocksTextUI.text = _activeAgentsList[0].CarriedRocks.ToString();
-            _UILinker.WoodTextUI.text = _activeAgentsList[0].CarriedWood.ToString();
-            _UILinker.HealthTextUI.text = _activeAgentsList[0].CurrentHealth.ToString();
+            if (_activeAgentsList != null)
+            {
+                _UILinker.FoodTextUI.text = _activeAgentsList.FirstOrDefault().CarriedFood.ToString();
+                _UILinker.RocksTextUI.text = _activeAgentsList.FirstOrDefault().CarriedRocks.ToString();
+                _UILinker.WoodTextUI.text = _activeAgentsList.FirstOrDefault().CarriedWood.ToString();
+                _UILinker.HealthTextUI.text = _activeAgentsList.FirstOrDefault().CurrentHealth.ToString();
+            }
+            
         }
         else
         {

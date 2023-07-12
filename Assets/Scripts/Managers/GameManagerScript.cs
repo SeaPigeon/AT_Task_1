@@ -36,15 +36,21 @@ public class GameManagerScript : MonoBehaviour
     [SerializeField] int _totalFood;
     [SerializeField] int _totalRocks;
     [SerializeField] int _totalWood;
+    [SerializeField] float _delayBeforeFirstSpawn = 10;
+    [SerializeField] float _spawnTime = 30;
 
     [SerializeField] List<AgentScript> _agentsInGame;
     [SerializeField] List<ResourceBase> _resourcesInGame;
     [SerializeField] List<BuildingBase> _buildingsInGame;
     [SerializeField] List<EnemyScript> _enemiesInGame;
+    [SerializeField] List<SpawnerScript> _spawnersInGame;
 
     [Header("Debug")]
+    [SerializeField] GameObject _agentPrefab;
     [SerializeField] GameObject _enemyPrefab;
     [SerializeField] int _waveCount;
+    [SerializeField] int _MAX_NUMBER_OF_AGENTS = 10;
+    [SerializeField] int _currentAgentsInScene;
 
     public event Action OnGMSetUpComplete;
 
@@ -79,10 +85,12 @@ public class GameManagerScript : MonoBehaviour
     public List<ResourceBase> ResourcesInGame { get { return _resourcesInGame; } set { _resourcesInGame = value; } }
     public List<BuildingBase> BuildingsInGame { get { return _buildingsInGame; } set { _buildingsInGame = value; } }
     public List<EnemyScript> EnemiesInGame { get { return _enemiesInGame; } set { _enemiesInGame = value; } }
+    public List<SpawnerScript> SpawnersInGame { get { return _spawnersInGame; } set { _spawnersInGame = value; } }
 
     public int TotalFood { get { return _totalFood; } set { _totalFood = value; } }
     public int TotalRocks { get { return _totalRocks; } set { _totalRocks = value; } }
     public int TotalWood { get { return _totalWood; } set { _totalWood = value; } }
+    public int WaveCount { get { return _waveCount; } set { _waveCount = value; } }
 
     // Methods
     private void GameManagerSingleton()
@@ -109,14 +117,19 @@ public class GameManagerScript : MonoBehaviour
         ActiveSceneName = SceneManager.GetActiveScene().name;
         SceneLoadedIndex = SceneManager.GetActiveScene().buildIndex;
         SetGameState();
-        _totalFood = 500000;
-        _totalRocks = 0;
-        _totalWood = 0;
+        _totalFood = 4;
+        _totalRocks = 2;
+        _totalWood = 2;
         _waveCount = 0;
+        _currentAgentsInScene = 0;
         _victory = false;
         OnGMSetUpComplete?.Invoke();
-        StartCoroutine(Hunger());
-        //StartCoroutine(WaveSpawner());
+        if (_activeGameState == GameState.InGame)
+        {
+            StartCoroutine(Hunger());
+            StartCoroutine(WaveSpawner());
+            StartCoroutine(SpawnAgents());
+        }
         //Debug.Log("GameManager SetUp");
     }
     private void SetUpGame(Scene scene, LoadSceneMode mode)
@@ -125,7 +138,24 @@ public class GameManagerScript : MonoBehaviour
         ActiveSceneName = SceneManager.GetActiveScene().name;
         SceneLoadedIndex = SceneManager.GetActiveScene().buildIndex;
         SetGameState();
+        _totalFood = 4;
+        _totalRocks = 2;
+        _totalWood = 2;
+        _waveCount = 0;
+        _currentAgentsInScene = 0;
+        _victory = false;
+        /*_agentsInGame.Clear();
+        _resourcesInGame.Clear();
+        _buildingsInGame.Clear();
+        _enemiesInGame.Clear();
+        _spawnersInGame.Clear();*/
         OnGMSetUpComplete?.Invoke();
+        if (_activeGameState == GameState.InGame)
+        {
+            StartCoroutine(Hunger());
+            StartCoroutine(WaveSpawner());
+            StartCoroutine(SpawnAgents());
+        }
     }
     public void SetGameState()
     {
@@ -183,9 +213,18 @@ public class GameManagerScript : MonoBehaviour
         Debug.Log("Hunger Started");
         while (!_victory)
         {
+            if (_victory)
+            {
+                yield break;
+            }
             if (_agentsInGame.Count == 0)
             {
                 _victory = true;
+                _agentsInGame.Clear();
+                _resourcesInGame.Clear();
+                _buildingsInGame.Clear();
+                _enemiesInGame.Clear();
+                _spawnersInGame.Clear();
                 UIManagerScript.UIMInstance.GetComponent<LinkUIScript>().ScoreEndScreenUI.text = _score.ToString();
                 SceneManagerScript.SMInstance.LoadEndGameScreen();
                 yield break;
@@ -213,16 +252,22 @@ public class GameManagerScript : MonoBehaviour
     }
     private IEnumerator WaveSpawner()
     {
-        Vector3 spawnPosition = new Vector3(0, 0, 0);
+        Vector3 spawnPosition = new Vector3(0, 1, 0);
         Quaternion spawnRotation = Quaternion.identity;
         _waveCount++;
         yield return new WaitForSeconds(_timeBeforeWaves);
         Debug.Log("Spawner Started");
         while (!_victory)
         {
+            if (_victory)
+            {
+                yield break;
+            }
             for (int i = 0; i < _waveCount; i++)
             {
+
                 Instantiate(_enemyPrefab, spawnPosition, spawnRotation);
+     
             }
             UIManagerScript.UIMInstance.GetComponent<LinkUIScript>().EmotionTextUI.text = "Wave " + _waveCount.ToString() + " Incoming";
             _waveCount++;
@@ -233,6 +278,22 @@ public class GameManagerScript : MonoBehaviour
             yield return new WaitForSeconds(_timeBetweenWaves);
         }
     }
-    
+    private IEnumerator SpawnAgents()
+    {
+        yield return new WaitForSeconds(_delayBeforeFirstSpawn);
+        while (_currentAgentsInScene < _MAX_NUMBER_OF_AGENTS)
+        {
+            if (_victory)
+            {
+                yield break;
+            }
+            int randomIndex = 0;
+            randomIndex = Random.Range(0, _spawnersInGame.Count);
+            Instantiate(_agentPrefab, _spawnersInGame[randomIndex].transform.position, _spawnersInGame[randomIndex].transform.rotation);
+            _currentAgentsInScene++;
+            //PlayerScript.PlayerInstance.EmotionTextHandler(3, "A NEW LIFE IS BORN!", "...");
+            yield return new WaitForSeconds(_spawnTime);
+        }
+    }
 }
 
