@@ -127,9 +127,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _buildingType: 0
-  _MAX_INTERACTIONS: 3
-  _KNIGHT_COST_ROCKS: 15
-  _KNIGHT_COST_WOOD: 15
+  _MAX_INTERACTIONS: 8
+  _KNIGHT_COST_ROCKS: 8
+  _KNIGHT_COST_WOOD: 8
   _currentInteractions: 0
   _INTERACTION_COMPLETION_TIME: 10
   _agentsAssignedList: []

@@ -258,10 +258,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10819bebf9c942f4c9f2f222b2073682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeed: 12
+  _moveSpeed: 13
   _runSpeed: 0
   _rotationSpeed: 50
-  _ascentSpeed: 14
+  _ascentSpeed: 15
   _maxHeight: 60
   _minHeight: 4
   _minAngleV: 20
@@ -276,7 +276,7 @@ MonoBehaviour:
   _eastButtonInput: 0
   _RSInput: 0
   _LSInput: 0
-  _state: 0
+  _playerState: 0
   _gravityEnabled: 0
   _activeAgentsList: []
   _agentsInTrigger: []

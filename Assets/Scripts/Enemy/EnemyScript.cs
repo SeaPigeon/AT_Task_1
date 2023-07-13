@@ -41,7 +41,7 @@ public class EnemyScript : MonoBehaviour
     [SerializeField] GameObject _mesh;
     [SerializeField] bool _hasTarget;
     [SerializeField] private Slider _healthSlider;
-    [SerializeField] private Slider _interactSlider;
+    [SerializeField] private Slider _attackSlider;
     private AgentScript _closestAgent;
     private Coroutine _activeCor;
     [SerializeField] private bool _inCombat;
@@ -55,6 +55,7 @@ public class EnemyScript : MonoBehaviour
     public AgentScript ClosestAgent { get { return _closestAgent; } set { _closestAgent = value; } }
     public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } set { _navMeshAgent = value; } }
     public float BaseMoveSpeed { get { return _moveSpeedBase; } }
+    public Slider AttackSlider { get { return _attackSlider; } }
 
     void Start()
     {
@@ -65,7 +66,7 @@ public class EnemyScript : MonoBehaviour
 
     void Update()
     {
-        //Behaviour();
+        Behaviour();
     }
 
     // Essentials
@@ -85,7 +86,11 @@ public class EnemyScript : MonoBehaviour
         _closestAgent = null;
         _inCombat = false;
         _moveSpeedBase = _navMeshAgent.speed;
-    }
+        _attackSlider.gameObject.SetActive(false);
+        _healthSlider.gameObject.SetActive(true);
+        _healthSlider.maxValue = _MAX_HEALTH;
+        _healthSlider.value = _currentHealth;
+    } 
 
     // Chase
     private void StartChase()
@@ -97,16 +102,15 @@ public class EnemyScript : MonoBehaviour
     {
         _closestAgent = FindClosestAgent();
         _navMeshAgent.isStopped = false;
-        _navMeshAgent.SetDestination(_closestAgent.transform.position);
+        _navMeshAgent.SetDestination(_closestAgent.AgentCombatPoint.transform.position);
 
         if (!_navMeshAgent.pathPending &&
             _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance
             )
         {
             StopChasing();
-            if (!_inCombat && Vector3.Distance(transform.position, _closestAgent.transform.position) < 2)
+            if (!_inCombat && Vector3.Distance(transform.position, _closestAgent.AgentCombatPoint.transform.position) < 2)
             {
-
                 _navMeshAgent.isStopped = true;
                 _closestAgent.StopIdle();
                 _currentState = EnemyState.Combat;
@@ -152,11 +156,18 @@ public class EnemyScript : MonoBehaviour
     {
         _inCombat = true;
         _hasTarget = true;
+        _attackSlider.gameObject.SetActive(true);
         Debug.Log("Enemy Attaks Started");
-        _navMeshAgent.speed = _closestAgent.NavMeshAgent.speed;
+        _navMeshAgent.speed = _closestAgent.NavMeshAgent.speed + 1;
         while (_hasTarget)
         {
-            if (Vector3.Distance(transform.position, _closestAgent.transform.position) > 2 )
+            if (_gameManager.AgentsInGame.Count <= 0)
+            {
+                _gameManager.EnemiesInGame.Remove(this);
+                Destroy(gameObject);
+                yield break;
+            }
+            if (Vector3.Distance(transform.position, _closestAgent.AgentCombatPoint.transform.position) > 2 )
             {
                 _navMeshAgent.isStopped = false;
                 _navMeshAgent.SetDestination(_closestAgent.transform.position);
@@ -164,17 +175,19 @@ public class EnemyScript : MonoBehaviour
             else
             {
                 _navMeshAgent.isStopped = true;
+                _closestAgent.TakeDamage(_damage);
+
+                
+                StartCoroutine(FillBar(_attackDelay));
+                yield return new WaitForSeconds(_attackDelay);
             }
-           
-            _closestAgent.TakeDamage(_damage);
-            yield return new WaitForSeconds(_attackDelay);
         }
         
     } 
     public void TakeDamage(int dmg)
     {
         _currentHealth -= dmg;
-        //handle health bar
+        _healthSlider.value = _currentHealth;
 
         if (_currentHealth <= 0)
         {
@@ -184,9 +197,11 @@ public class EnemyScript : MonoBehaviour
             _currentState = EnemyState.Dead;
             _gameManager.EnemiesInGame.Remove(this);
             _closestAgent.ActiveAgentState = AgentState.Inactive;
+            _closestAgent.AgentSlider.gameObject.SetActive(false);
             _closestAgent.InCombat = false;
             _closestAgent.StopAgentCoroutine(_closestAgent.ActiveCoR);
             _closestAgent.ActiveCoR = null;
+            _closestAgent.EnemyToAttack = null;
             Destroy(gameObject);
 
         }
@@ -196,15 +211,13 @@ public class EnemyScript : MonoBehaviour
     private void SpawnEnemy()
     {
         _mesh.SetActive(false);
-        transform.position = GenerateRandomPoint(transform.position, 40);
+        transform.position = GenerateRandomPoint(40);
         _mesh.SetActive(true);
         _currentState = EnemyState.Inactive;
     }
-    private Vector3 GenerateRandomPoint(Vector3 enemyPos, int range)
+    private Vector3 GenerateRandomPoint(int range)
     {
-        Vector3 randomPoint = enemyPos + Random.insideUnitSphere * range;
-        Vector3 randomPointH = new Vector3(randomPoint.x, randomPoint.y + 1, randomPoint.z);
-        randomPoint = randomPointH;
+        Vector3 randomPoint = Vector3.zero + Random.insideUnitSphere * range;
         NavMeshHit hit;
         NavMesh.SamplePosition(randomPoint, out hit, range, NavMesh.AllAreas);
         return hit.position;
@@ -250,6 +263,19 @@ public class EnemyScript : MonoBehaviour
         if (coroutine != null)
         {
             StopCoroutine(coroutine);
+        }
+    }
+    public IEnumerator FillBar(float maxTime)
+    {
+        var startTime = 0f;
+        _attackSlider.value = 0f;
+
+        while (startTime < maxTime)
+        {
+            startTime += Time.deltaTime;
+            float sliderValue = startTime / maxTime;
+            _attackSlider.value = sliderValue;
+            yield return null;
         }
     }
 }

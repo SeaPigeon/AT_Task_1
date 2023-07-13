@@ -269,28 +269,16 @@ public class AgentScript : MonoBehaviour
             _interactionSlider.value = sliderValue;
             yield return null;
         }
-
-        //_agentCanvas.enabled = false;
     }
 
     // Combat
     private void StartAttack()
     {
-        _navMeshAgent.isStopped = true;
-        StopIdle();
-        _enemyToAttack.CurrentEnemyState = EnemyState.Combat;
-        ActiveAgentState = AgentState.Combat;
-
-        if (PlayerScript.PlayerInstance.ActiveAgentsList.Contains(this))
-        {
-            PlayerScript.PlayerInstance.ActiveAgentsList.Remove(this);
-            PlayerScript.PlayerInstance.HasAgentsInSelection();
-        }
+        
     }
     public IEnumerator Attack()
     {
-        _inCombat = true;
-        Debug.Log("AgentCombatStarted");
+        EnableInteractSlider();
         while (_enemyToAttack != null)
         {
             switch (_agentClass)
@@ -299,7 +287,9 @@ public class AgentScript : MonoBehaviour
                     Debug.Log("I fear for my life!");
                     break;
                 case AgentClass.Knight:
+                    Debug.Log("For the peace of the village!");
                     _enemyToAttack.TakeDamage(_damage);
+                    StartCoroutine(FillBar(_attackDelay));
                     yield return new WaitForSeconds(_attackDelay);
                     break;
                 default:
@@ -307,12 +297,11 @@ public class AgentScript : MonoBehaviour
                     break;
             }
         }
-        
+
     }
     public void TakeDamage(int damage)
     {
         _currentHealth -= damage;
-        EnableHealthSlider();
         _healthSlider.value = _currentHealth;
         if (_currentHealth <= 0)
         {
@@ -320,10 +309,11 @@ public class AgentScript : MonoBehaviour
             _activeCor = null;
             _enemyToAttack.StopEnemyCoroutine(_enemyToAttack.ActiveCoR);
             _enemyToAttack.ActiveCoR = null;
-            _enemyToAttack.ClosestAgent = null;
             _enemyToAttack.CurrentEnemyState = EnemyState.Inactive;
             _enemyToAttack.HasTarget = false;
+            _enemyToAttack.ClosestAgent = null;
             _enemyToAttack.NavMeshAgent.speed = _enemyToAttack.BaseMoveSpeed;
+            _enemyToAttack.AttackSlider.gameObject.SetActive(false);
             Debug.Log("What a cruel world");
             _gameManager.AgentsInGame.Remove(this);
             Destroy(gameObject);
@@ -337,6 +327,7 @@ public class AgentScript : MonoBehaviour
         }
     }
 
+    // Behaviour
     private void Behaviour()
     {
         switch (_agentState)
@@ -373,7 +364,6 @@ public class AgentScript : MonoBehaviour
                         }
                         else if (_enemyToAttack != null)
                         {
-                            //_enemyToAttack.StartAttack();
                             _agentState = AgentState.Combat;
                         }
 
@@ -386,7 +376,27 @@ public class AgentScript : MonoBehaviour
                 ChangeColor(Color.red);
                 if (!_inCombat)
                 {
-                    _activeCor = StartCoroutine(Attack());
+                    switch (_agentClass)
+                    {
+                        case AgentClass.Villager:
+                            Debug.Log("I'm in combat and I'm afraid");
+                            InCombat = true;
+                            break;
+                        case AgentClass.Knight:
+                            _activeCor = StartCoroutine(Attack());
+                            _navMeshAgent.isStopped = true;
+                            InCombat = true;
+                            if (PlayerScript.PlayerInstance.ActiveAgentsList.Contains(this))
+                            {
+                                PlayerScript.PlayerInstance.ActiveAgentsList.Remove(this);
+                                PlayerScript.PlayerInstance.HasAgentsInSelection();
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    
+     
                 }
                 break;
             case AgentState.Interacting:

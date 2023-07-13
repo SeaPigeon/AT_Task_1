@@ -41,7 +41,7 @@ public class PlayerScript : MonoBehaviour
     private Vector3 _appliedMoveVector;
 
     [Header("Debug")]
-    [SerializeField] PlayerStates _state;
+    [SerializeField] PlayerStates _playerState;
     [SerializeField] bool _gravityEnabled;
     [SerializeField] List<AgentScript> _activeAgentsList;
     [SerializeField] List<AgentScript> _agentsInTrigger;
@@ -61,16 +61,16 @@ public class PlayerScript : MonoBehaviour
     private Vector3 _startingCamPos;
     private Quaternion _startingCamRot;
 
-    private float _xPoint1 = 0;
-    private float _yPoint1 = 0;
-    private float _xPoint2 = 0;
-    private float _yPoint2 = 0;
+    private Vector3 _firstPoint;
+    private Vector3 _secondPoint;
+
     private float _bigX = 0;
     private float _smallX = 0;
     private float _bigY = 0;
     private float _smallY = 0;
-
+ 
     private Coroutine _activeCor;
+    private GameObject _selectionAreaObject = null;
 
     // G&S
     public static PlayerScript PlayerInstance { get { return _playerInstance; } }
@@ -103,6 +103,10 @@ public class PlayerScript : MonoBehaviour
         }
         ResetSelection(_eastButtonInput);
         LinkUI();
+        if (_playerState == PlayerStates.Selecting)
+        {
+            DrawSelectionArea();
+        }
     }
     private void LateUpdate()
     {
@@ -186,7 +190,7 @@ public class PlayerScript : MonoBehaviour
     }
     private void SetUpPlayer()
     {
-        _state = PlayerStates.Rest;
+        _playerState = PlayerStates.Rest;
         _playerSprite.sprite = _baseCrosshairSprite;
         _startingCamPos = _gameCamBody.transform.localPosition;
         _startingCamRot = _gameCamBody.localRotation;
@@ -433,60 +437,39 @@ public class PlayerScript : MonoBehaviour
     {
         if (_activeAgentsList.Count >= 1)
         {
-            _state = PlayerStates.HoldingSelection;
+            _playerState = PlayerStates.HoldingSelection;
         }
         else
         {
-            _state = PlayerStates.Rest;
+            _playerState = PlayerStates.Rest;
         }
     }
-
+    /*
+     * float distance = 0;
+     * for each vertex in vertex list
+     *      for each vertex2 in vertex list
+     *      float newDistance = Vector3.GetDistance(vertex, vertex2)
+     *      if(newDistance > distance)
+     *      distance = newDistance;
+     * 
+     * figure out the point between the two furdest points
+     * 
+     * figure out vertex order to determinate sides
+     * 
+     * form triangles with the new point generated and the 2 point of each side
+     */
     // Selection AoE
     private void StartSelectionArea()
     {
-        _xPoint1 = 0;
-        _yPoint1 = 0;
-        _xPoint2 = 0;
-        _yPoint2 = 0;
-
-        _bigX = 0;
-        _smallX = 0;
-        _bigY = 0;
-        _smallY = 0;
-
-        _state = PlayerStates.Selecting;
+        _firstPoint = transform.position;
+        Debug.Log(_firstPoint);
         _playerSprite.sprite = _selectedCrosshairSprite;
-        _xPoint1 = transform.position.x;
-        _yPoint1 = transform.position.z;
+        CreateMesh();
+        _playerState = PlayerStates.Selecting;
     }
     private void StopSelectionArea()
     {
-        
-        _xPoint2 = transform.position.x;
-        _yPoint2 = transform.position.z;
 
-        if (_xPoint1 < _xPoint2)
-        {
-            _bigX = _xPoint2;
-            _smallX = _xPoint1;
-        }
-        else
-        {
-            _bigX = _xPoint1;
-            _smallX = _xPoint2;
-        }
-
-        if (_yPoint1 < _yPoint2)
-        {
-            _bigY = _yPoint2;
-            _smallY = _yPoint1;
-        }
-        else
-        {
-            _bigY = _yPoint1;
-            _smallY = _yPoint2;
-        }
-        
         foreach (var agent in _gameManager.AgentsInGame)
         {
             if ((agent.transform.position.x >= _smallX && agent.transform.position.x <= _bigX) &&
@@ -498,10 +481,84 @@ public class PlayerScript : MonoBehaviour
 
         _playerSprite.sprite = _baseCrosshairSprite;
         HasAgentsInSelection();
+        DestroyMesh();
     }
     private void DrawSelectionArea() 
     {
+        _secondPoint = transform.position;
+        SortPoints();
 
+        Mesh mesh = _selectionAreaObject.GetComponent<MeshFilter>().mesh;
+        
+        Vector3 v1 = new Vector3(_smallX, 0, _smallY);
+        Vector3 v2 = new Vector3(_smallX, 0, _bigY);
+        Vector3 v3 = new Vector3(_bigX, 0, _bigY);
+        Vector3 v4 = new Vector3(_bigX, 0, _smallY);
+
+        Vector3[] vertices = new Vector3[4];
+        vertices[0] = v1;
+        vertices[1] = v2;
+        vertices[2] = v3;
+        vertices[3] = v4;
+        mesh.vertices = vertices;
+        /*foreach (var item in mesh.vertices)
+        {
+            Debug.Log(item);
+        }*/
+        
+        int[] triangles = new int[6] {
+            0, 1, 2, 
+            2, 3, 0  
+        };
+        mesh.triangles = triangles;
+
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+    }
+    private void CreateMesh()
+    {
+        _selectionAreaObject = new GameObject();
+        _selectionAreaObject.transform.position = transform.position;
+        _selectionAreaObject.transform.rotation = transform.rotation;
+        Debug.Log("AoE Pos: " + _selectionAreaObject.transform.position);
+        MeshFilter meshFilter = _selectionAreaObject.AddComponent<MeshFilter>();
+        meshFilter.mesh = new Mesh();
+        MeshRenderer meshRenderer = _selectionAreaObject.AddComponent<MeshRenderer>();
+        Material material = new Material(Shader.Find("Standard"));
+        material.color = Color.yellow;
+        meshRenderer.sharedMaterial = material;
+    }
+    private void DestroyMesh()
+    {
+        if (_selectionAreaObject != null)
+        {
+            Destroy(_selectionAreaObject);
+            _selectionAreaObject = null;
+        }
+    }
+    private void SortPoints()
+    {
+        if (_firstPoint.x < _secondPoint.x)
+        {
+            _bigX = _secondPoint.x;
+            _smallX = _firstPoint.x;
+        }
+        else
+        {
+            _bigX = _firstPoint.x;
+            _smallX = _secondPoint.x;
+        }
+
+        if (_firstPoint.z < _secondPoint.z)
+        {
+            _bigY = _secondPoint.z;
+            _smallY = _firstPoint.z;
+        }
+        else
+        {
+            _bigY = _firstPoint.z;
+            _smallY = _secondPoint.z;
+        }
     }
 
     // Selection Move
@@ -607,7 +664,7 @@ public class PlayerScript : MonoBehaviour
     // Inputs
     private void ButtonSouthBehaviour(bool input)
     {
-        switch (_state)
+        switch (_playerState)
         {
             case PlayerStates.Rest:
                 if (input)

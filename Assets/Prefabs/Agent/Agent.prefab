@@ -69,8 +69,8 @@ MonoBehaviour:
   _rotationSpeed: 20
   _idleWalkRange: 5
   _timeBetweenWalks: 7
-  _MAX_FOOD_CARRIED: 2
-  _MAX_ROCK_CARRIED: 10
+  _MAX_FOOD_CARRIED: 8
+  _MAX_ROCK_CARRIED: 3
   _MAX_WOOD_CARRIED: 4
   _currentHealth: 0
   _MAX_HEALTH: 100

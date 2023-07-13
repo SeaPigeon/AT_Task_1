@@ -244,6 +244,10 @@ public class GameManagerScript : MonoBehaviour
 
                 _agentsInGame[randomNumber].StopAgentCoroutine(_agentsInGame[randomNumber].ActiveCoR);
                 _agentsInGame.RemoveAt(randomNumber);
+                if (PlayerScript.PlayerInstance.ActiveAgentsList.Contains(agentToRemove))
+                {
+                    PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agentToRemove);
+                }
                 Debug.Log("Bye Bye " + agentToRemove.name);
                 Destroy(agentToRemove.gameObject);
                 _totalFood = 0;
@@ -252,7 +256,7 @@ public class GameManagerScript : MonoBehaviour
     }
     private IEnumerator WaveSpawner()
     {
-        Vector3 spawnPosition = new Vector3(0, 1, 0);
+        Vector3 spawnPosition = new Vector3(20, 1, 20);
         Quaternion spawnRotation = Quaternion.identity;
         _waveCount++;
         yield return new WaitForSeconds(_timeBeforeWaves);
@@ -280,6 +284,7 @@ public class GameManagerScript : MonoBehaviour
     }
     private IEnumerator SpawnAgents()
     {
+        Debug.Log("agent spawner Started");
         yield return new WaitForSeconds(_delayBeforeFirstSpawn);
         while (_currentAgentsInScene < _MAX_NUMBER_OF_AGENTS)
         {
@@ -291,7 +296,7 @@ public class GameManagerScript : MonoBehaviour
             randomIndex = Random.Range(0, _spawnersInGame.Count);
             Instantiate(_agentPrefab, _spawnersInGame[randomIndex].transform.position, _spawnersInGame[randomIndex].transform.rotation);
             _currentAgentsInScene++;
-            //PlayerScript.PlayerInstance.EmotionTextHandler(3, "A NEW LIFE IS BORN!", "...");
+            StartCoroutine(PlayerScript.PlayerInstance.EmotionTextHandler(3, "A NEW LIFE IS BORN!", "..."));
             yield return new WaitForSeconds(_spawnTime);
         }
     }

@@ -52,14 +52,14 @@ MonoBehaviour:
   _audioClipPlaying: 0
   _timeBeforeHunger: 45
   _timeBetweenHungerProcs: 30
-  _timeBeforeWaves: 45
-  _timeBetweenWaves: 30
+  _timeBeforeWaves: 60
+  _timeBetweenWaves: 45
   _score: 0
   _victory: 0
   _totalFood: 0
   _totalRocks: 0
   _totalWood: 0
-  _delayBeforeFirstSpawn: 15
+  _delayBeforeFirstSpawn: 3
   _spawnTime: 30
   _agentsInGame: []
   _resourcesInGame: []

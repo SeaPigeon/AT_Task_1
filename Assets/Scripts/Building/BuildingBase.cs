@@ -62,7 +62,8 @@ public class BuildingBase : MonoBehaviour
                             if (_gameManager.TotalWood < _KNIGHT_COST_WOOD ||
                                 _gameManager.TotalRocks < _KNIGHT_COST_ROCKS)
                             {
-                                PlayerScript.PlayerInstance.ActiveCoR = StartCoroutine(PlayerScript.PlayerInstance.EmotionTextHandler(3, "2 Wood and 2 Rocks Needed to get an Armor", "..."));
+                                PlayerScript.PlayerInstance.ActiveCoR = StartCoroutine(PlayerScript.PlayerInstance.EmotionTextHandler(3, _KNIGHT_COST_WOOD.ToString() + " Wood and " +
+                                                                                                                                         _KNIGHT_COST_ROCKS + " Rocks Needed to make an Armor", "..."));
                             }
                             agent.ActiveAgentState = AgentState.Inactive;
                             PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
