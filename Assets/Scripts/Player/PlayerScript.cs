@@ -377,7 +377,7 @@ public class PlayerScript : MonoBehaviour
             case AgentState.Moving:
                 break;
             case AgentState.Combat:
-                //agent.EnemyToAttack.StopAttacking(agent);
+                agent.StopCombat();
                 break;
             case AgentState.Building:
                 break;

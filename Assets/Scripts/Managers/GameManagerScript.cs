@@ -210,7 +210,7 @@ public class GameManagerScript : MonoBehaviour
     private IEnumerator Hunger()
     {
         yield return new WaitForSeconds(_timeBeforeHunger);
-        Debug.Log("Hunger Started");
+        //Debug.Log("Hunger Started");
         while (!_victory)
         {
             if (_victory)

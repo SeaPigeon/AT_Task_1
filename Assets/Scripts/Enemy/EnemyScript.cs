@@ -55,6 +55,7 @@ public class EnemyScript : MonoBehaviour
     public AgentScript ClosestAgent { get { return _closestAgent; } set { _closestAgent = value; } }
     public NavMeshAgent NavMeshAgent { get { return _navMeshAgent; } set { _navMeshAgent = value; } }
     public float BaseMoveSpeed { get { return _moveSpeedBase; } }
+    public float CurrentHealth { get { return _currentHealth; } }
     public Slider AttackSlider { get { return _attackSlider; } }
 
     void Start()
@@ -163,6 +164,7 @@ public class EnemyScript : MonoBehaviour
         {
             if (_gameManager.AgentsInGame.Count <= 0)
             {
+                StopCombat();
                 _gameManager.EnemiesInGame.Remove(this);
                 Destroy(gameObject);
                 yield break;
@@ -176,37 +178,51 @@ public class EnemyScript : MonoBehaviour
             {
                 _navMeshAgent.isStopped = true;
                 _closestAgent.TakeDamage(_damage);
-
-                
+                if (_closestAgent.CurrentHealth <= 0)
+                {
+                    foreach (var enemy in _gameManager.EnemiesInGame)
+                    {
+                        if (enemy.HasTarget && enemy.InCombat && enemy.ClosestAgent == _closestAgent)
+                        {
+                            Debug.Log(enemy.name + " CombatStopped");
+                            enemy.StopCombat();
+                        }
+                    }
+                    _closestAgent.AgentDeath();
+                    yield break;
+                }
                 StartCoroutine(FillBar(_attackDelay));
                 yield return new WaitForSeconds(_attackDelay);
             }
         }
-        
     } 
+    public void StopCombat()
+    {
+        _navMeshAgent.isStopped = true;
+        StopEnemyCoroutine(_activeCor);
+        _activeCor = null;
+        _inCombat = false;
+        _hasTarget = false;
+        //_closestAgent = null;
+        _navMeshAgent.speed = _moveSpeedBase;
+        _attackSlider.gameObject.SetActive(false);
+        _currentState = EnemyState.Inactive;
+    }
     public void TakeDamage(int dmg)
     {
         _currentHealth -= dmg;
         _healthSlider.value = _currentHealth;
-
-        if (_currentHealth <= 0)
-        {
-            _navMeshAgent.isStopped = true;
-            _gameManager.ChangeScore(_pointValue);
-            _UILinker.ScoreTextUI.text = _gameManager.Score.ToString();
-            _currentState = EnemyState.Dead;
-            _gameManager.EnemiesInGame.Remove(this);
-            _closestAgent.ActiveAgentState = AgentState.Inactive;
-            _closestAgent.AgentSlider.gameObject.SetActive(false);
-            _closestAgent.InCombat = false;
-            _closestAgent.StopAgentCoroutine(_closestAgent.ActiveCoR);
-            _closestAgent.ActiveCoR = null;
-            _closestAgent.EnemyToAttack = null;
-            Destroy(gameObject);
-
-        }
     }
 
+    public void EnemyDeath()
+    {
+        _gameManager.ChangeScore(_pointValue);
+        _UILinker.ScoreTextUI.text = _gameManager.Score.ToString();
+        StopCombat();
+        _currentState = EnemyState.Dead;
+        _gameManager.EnemiesInGame.Remove(this);
+        Destroy(gameObject);
+    }
     // Spawn
     private void SpawnEnemy()
     {
