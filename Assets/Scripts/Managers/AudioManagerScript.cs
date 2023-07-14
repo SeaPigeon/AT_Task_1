@@ -11,7 +11,13 @@ public class AudioManagerScript : MonoBehaviour
     [SerializeField] private AudioClip _gameMusic;
 
     [Header("SFX")]
-    [SerializeField] private AudioClip _doorSFX;
+    [SerializeField] private AudioClip _reapingSFX;
+    [SerializeField] private AudioClip _hatchetSFX;
+    [SerializeField] private AudioClip _miningSFX;
+    [SerializeField] private AudioClip _waveSFX;
+    [SerializeField] private AudioClip _attackSFX;
+    [SerializeField] private AudioClip _smithingSFX;
+    [SerializeField] private AudioClip _spawnSFX;
     [SerializeField] private AudioClip _victorySFX;
     [SerializeField] private AudioClip _defeatSFX;
 
@@ -150,9 +156,33 @@ public class AudioManagerScript : MonoBehaviour
     {
         AudioSource.PlayClipAtPoint(clip, CameraManagerScript.CMInstance.ActiveCamera.transform.position);
     }
-    public void PlayDoorSFX()
+    public void PlayGatherSFX()
     {
-        PlaySFX(_doorSFX);
+        PlaySFX(_reapingSFX);
+    }
+    public void PlayMiningSFX()
+    {
+        PlaySFX(_miningSFX);
+    }
+    public void PlayWoodCuttingSFX()
+    {
+        PlaySFX(_hatchetSFX);
+    }
+    public void PlayAttackSFX()
+    {
+        PlaySFX(_attackSFX);
+    }
+    public void PlayWaveSpawnSFX()
+    {
+        PlaySFX(_waveSFX);
+    }
+    public void PlaySmithingSFX()
+    {
+        PlaySFX(_smithingSFX);
+    }
+    public void PlaySpawnSFX()
+    {
+        PlaySFX(_spawnSFX);
     }
     public void PlayVictorySFX()
     {

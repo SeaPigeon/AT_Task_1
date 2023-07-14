@@ -602,14 +602,17 @@ public class PlayerScript : MonoBehaviour
                     case ResourceType.Corn:
                         StopActiveCoR();
                         _activeCor = StartCoroutine(EmotionTextHandler(3, "It's time to get sweaty in the field!", "..."));
+                        AudioManagerScript.AMInstance.PlayGatherSFX();
                         break;
                     case ResourceType.Rock:
                         StopActiveCoR();
                         _activeCor = StartCoroutine(EmotionTextHandler(3, "Heigh-Hoooooo!", "..."));
+                        AudioManagerScript.AMInstance.PlayMiningSFX();
                         break;
                     case ResourceType.Wood:
                         StopActiveCoR();
                         _activeCor = StartCoroutine(EmotionTextHandler(3, "Watch out for splinters!", "..."));
+                        AudioManagerScript.AMInstance.PlayWoodCuttingSFX();
                         break;
                     default:
                         break;
@@ -624,6 +627,7 @@ public class PlayerScript : MonoBehaviour
                     case BuildingType.Armory:
                         StopActiveCoR();
                         _activeCor = StartCoroutine(EmotionTextHandler(3, "For the peace of the village", "..."));
+                        AudioManagerScript.AMInstance.PlaySmithingSFX();
                         break;
                     case BuildingType.Deposit:
                         StopActiveCoR();
@@ -639,13 +643,13 @@ public class PlayerScript : MonoBehaviour
                 posToMove = _enemyInTrigger.FightPoint.transform.position;
                 StopActiveCoR();
                 _activeCor = StartCoroutine(EmotionTextHandler(3, "TO THE DEATH!", "..."));
+                AudioManagerScript.AMInstance.PlayAttackSFX();
             }
             
             MoveAgent(agent, posToMove);
         }
         HasAgentsInSelection();
     }
-
     private void StopActiveCoR()
     {
         if (_activeCor != null)
@@ -653,7 +657,6 @@ public class PlayerScript : MonoBehaviour
             StopCoroutine(_activeCor);
         }
     }
-    
     public IEnumerator EmotionTextHandler(int time, string string1, string string2)
     {
         _UILinker.EmotionTextUI.text = string1;

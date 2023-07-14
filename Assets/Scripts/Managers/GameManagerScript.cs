@@ -274,6 +274,7 @@ public class GameManagerScript : MonoBehaviour
      
             }
             UIManagerScript.UIMInstance.GetComponent<LinkUIScript>().EmotionTextUI.text = "Wave " + _waveCount.ToString() + " Incoming";
+            AudioManagerScript.AMInstance.PlayWaveSpawnSFX();
             _waveCount++;
             /*if (_waveCount > 5)
             {
@@ -295,6 +296,7 @@ public class GameManagerScript : MonoBehaviour
             int randomIndex = 0;
             randomIndex = Random.Range(0, _spawnersInGame.Count);
             Instantiate(_agentPrefab, _spawnersInGame[randomIndex].transform.position, _spawnersInGame[randomIndex].transform.rotation);
+            AudioManagerScript.AMInstance.PlaySpawnSFX();
             _currentAgentsInScene++;
             StartCoroutine(PlayerScript.PlayerInstance.EmotionTextHandler(3, "A NEW LIFE IS BORN!", "..."));
             yield return new WaitForSeconds(_spawnTime);

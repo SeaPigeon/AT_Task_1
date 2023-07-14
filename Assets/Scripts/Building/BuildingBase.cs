@@ -51,7 +51,6 @@ public class BuildingBase : MonoBehaviour
                             _currentInteractions++;
                             agent.ActiveAgentState = AgentState.Interacting;
                             agent.ActiveCoR = null;
-                            //agent.EnableAgentUI(_INTERACTION_COMPLETION_TIME);
                             agent.ActiveCoR = StartCoroutine(Interact(agent));
                             PlayerScript.PlayerInstance.ActiveAgentsList.Remove(agent);
                             PlayerScript.PlayerInstance.HasAgentsInSelection();

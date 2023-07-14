@@ -73,13 +73,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e81f458b2d8e51468027c509d5b4a47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _debugBGSprite: {fileID: 21300000, guid: 6b4a052d0229a0647876fddd906252a0, type: 3}
+  _debugBGSprite: {fileID: 0}
   _debugTitleBGSprite: {fileID: 21300000, guid: de76ecd4c500b7e4ca4d5c06eaf87a21, type: 3}
   _debugTitleString: AT Task 1 Squad AI
-  _mainMenuBGSprite: {fileID: 21300000, guid: 6b4a052d0229a0647876fddd906252a0, type: 3}
+  _mainMenuBGSprite: {fileID: 21300000, guid: e6bc8fe20a6211c4c83da468b03d2e82, type: 3}
   _mainMenuTitleBGSprite: {fileID: 21300000, guid: de76ecd4c500b7e4ca4d5c06eaf87a21, type: 3}
   _mainMenuTitleString: HAunTed Village
-  _controlsBGSprite: {fileID: 21300000, guid: 6b4a052d0229a0647876fddd906252a0, type: 3}
+  _controlsBGSprite: {fileID: 21300000, guid: e6bc8fe20a6211c4c83da468b03d2e82, type: 3}
   _controlsTitleSprite: {fileID: 21300000, guid: de76ecd4c500b7e4ca4d5c06eaf87a21, type: 3}
   _controlsTitleString: Controls
   _wButtonSprite: {fileID: 21300000, guid: d10f20bbd8528cf4987f0cb69b72f840, type: 3}
@@ -111,7 +111,7 @@ MonoBehaviour:
   _editorBGSprite: {fileID: 21300000, guid: 6b4a052d0229a0647876fddd906252a0, type: 3}
   _editorTitleBGSprite: {fileID: 21300000, guid: de76ecd4c500b7e4ca4d5c06eaf87a21, type: 3}
   _editorTitleString: Editor
-  _engBGSprite: {fileID: 21300000, guid: 6b4a052d0229a0647876fddd906252a0, type: 3}
+  _engBGSprite: {fileID: 21300000, guid: e6bc8fe20a6211c4c83da468b03d2e82, type: 3}
   _endTitleSprite: {fileID: 21300000, guid: de76ecd4c500b7e4ca4d5c06eaf87a21, type: 3}
   _endTitleString: Game Over
   _endScoreBGSprite: {fileID: 21300000, guid: 6592c1a18e8a87244ab324262b754c2d, type: 3}

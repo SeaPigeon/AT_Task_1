@@ -43,10 +43,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d875238bfaac39e49bdd35ad7b2ecfac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _menuMusic: {fileID: 8300000, guid: 07b940f062d3f95428c2f32c1fa1fc56, type: 3}
+  _menuMusic: {fileID: 8300000, guid: 78e802ece178a31428dee8b29731cbb8, type: 3}
   _editorMusic: {fileID: 8300000, guid: dfcb1b69dfa46e5419c211c917ce922c, type: 3}
-  _gameMusic: {fileID: 8300000, guid: dfcb1b69dfa46e5419c211c917ce922c, type: 3}
-  _doorSFX: {fileID: 8300000, guid: 9405eefda4541d44c81fc199e72cf747, type: 3}
+  _gameMusic: {fileID: 8300000, guid: 8eb85e4e7de1cf54fabe34a8fc92409c, type: 3}
+  _reapingSFX: {fileID: 8300000, guid: d1104704de1fac049b58047f48b81126, type: 3}
+  _hatchetSFX: {fileID: 8300000, guid: 3acf8fcc533084043a7c55a629523584, type: 3}
+  _miningSFX: {fileID: 8300000, guid: 28400826870ded04f8fafb240722e115, type: 3}
+  _waveSFX: {fileID: 8300000, guid: c0d03668403d61c4aaf5f6c2465a3261, type: 3}
+  _attackSFX: {fileID: 8300000, guid: 8705079382607ad428d504dfdd83fed8, type: 3}
+  _smithingSFX: {fileID: 8300000, guid: dc33333160ffa594897b4bc4ddb2061d, type: 3}
+  _spawnSFX: {fileID: 8300000, guid: 837ae63dbfba58449824e59124f0b7ce, type: 3}
   _victorySFX: {fileID: 8300000, guid: 59844f782cb32ae4eb57e401121f0bcc, type: 3}
   _defeatSFX: {fileID: 8300000, guid: ab6902f45d847574fb7bbc5e3c7c07a4, type: 3}
   _gameManager: {fileID: 0}
