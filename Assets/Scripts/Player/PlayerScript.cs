@@ -518,8 +518,8 @@ public class PlayerScript : MonoBehaviour
     private void CreateMesh()
     {
         _selectionAreaObject = new GameObject();
-        _selectionAreaObject.transform.position = transform.position;
-        _selectionAreaObject.transform.rotation = transform.rotation;
+        _selectionAreaObject.transform.position = Vector3.zero;
+        _selectionAreaObject.transform.rotation = Quaternion.identity;
         Debug.Log("AoE Pos: " + _selectionAreaObject.transform.position);
         MeshFilter meshFilter = _selectionAreaObject.AddComponent<MeshFilter>();
         meshFilter.mesh = new Mesh();
