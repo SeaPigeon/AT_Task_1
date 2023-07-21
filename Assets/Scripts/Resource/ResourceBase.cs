@@ -209,43 +209,37 @@ public class ResourceBase : MonoBehaviour
                     if (agent.CarriedFood >= agent.MaxFoodCarriable )
                     {
                         StopGathering(agent);
-                        //Debug.Log(name + "Gathering Finished: " + agent.name + " Limit Reached");
                         yield break;
                     }
 
                     agent.CarriedFood += IncreaseAgentResource();
                     ReduceResource();
-                    //Debug.Log(agent.name + " Food Carried: " + agent.CarriedFood);
                     break;
                 
                 case ResourceType.Rock:
                     if (agent.CarriedRocks >= agent.MaxRockCarriable)
                     {
                         StopGathering(agent);
-                        //Debug.Log(name + "Gathering Finished: " + agent.name + " Limit Reached");
                         yield break;
                     }
 
                     agent.CarriedRocks += IncreaseAgentResource();
                     ReduceResource();
-                    //Debug.Log(agent.name + " Rocks Carried: " + agent.CarriedRocks);
                     break;
 
                 case ResourceType.Wood: 
                     if (agent.CarriedWood >= agent.MaxWoodCarriable)
                     {
                         StopGathering(agent);
-                        //Debug.Log(name + "Gathering Finished: " + agent.name + " Limit Reached");
                         yield break;
                     }
 
                     agent.CarriedWood += IncreaseAgentResource();
                     ReduceResource();
-                    //Debug.Log(agent.name + " Wood Carried: " + agent.CarriedWood);
                     break;
 
                 default:
-                    //Debug.Log(name + " Resource Type ERROR");
+                    Debug.Log(name + " Resource Type ERROR");
                     break;
             }
 

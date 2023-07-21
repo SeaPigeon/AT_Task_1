@@ -501,11 +501,7 @@ public class PlayerScript : MonoBehaviour
         vertices[2] = v3;
         vertices[3] = v4;
         mesh.vertices = vertices;
-        /*foreach (var item in mesh.vertices)
-        {
-            Debug.Log(item);
-        }*/
-        
+       
         int[] triangles = new int[6] {
             0, 1, 2, 
             2, 3, 0  

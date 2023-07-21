@@ -210,7 +210,6 @@ public class GameManagerScript : MonoBehaviour
     private IEnumerator Hunger()
     {
         yield return new WaitForSeconds(_timeBeforeHunger);
-        //Debug.Log("Hunger Started");
         while (!_victory)
         {
             if (_victory)
@@ -276,10 +275,7 @@ public class GameManagerScript : MonoBehaviour
             UIManagerScript.UIMInstance.GetComponent<LinkUIScript>().EmotionTextUI.text = "Wave " + _waveCount.ToString() + " Incoming";
             AudioManagerScript.AMInstance.PlayWaveSpawnSFX();
             _waveCount++;
-            /*if (_waveCount > 5)
-            {
-                _timeBetweenWaves -= 2;
-            }*/
+   
             yield return new WaitForSeconds(_timeBetweenWaves);
         }
     }

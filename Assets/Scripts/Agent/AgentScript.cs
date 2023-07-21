@@ -390,7 +390,6 @@ public class AgentScript : MonoBehaviour
                     switch (_agentClass)
                     {
                         case AgentClass.Villager:
-                            //Debug.Log("I'm in combat and I'm afraid");
                             _navMeshAgent.isStopped = true;
                             InCombat = true;
                             break;
